@@ -1,0 +1,2274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Autonomous Agents — PM Learning Lab</title>
+  <meta name="description" content="Interactive documentation for the PM Learning Agents project. Covers  agent framework, four progressive projects exploring Perception, Reasoning, Action, Memory, and the Agent Lifecycle." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: true, theme: 'base', themeVariables: {
+      primaryColor: '#1e1e2e',
+      primaryTextColor: '#cdd6f4',
+      primaryBorderColor: '#45475a',
+      lineColor: '#7f849c',
+      secondaryColor: '#181825',
+      tertiaryColor: '#313244',
+      background: '#1e1e2e',
+      mainBkg: '#313244',
+      nodeBorder: '#45475a',
+      clusterBkg: '#181825',
+      titleColor: '#cdd6f4',
+      edgeLabelBackground: '#1e1e2e',
+      fontFamily: 'Inter, sans-serif',
+    }});
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f1117;
+      --surface: #161b27;
+      --surface-2: #1e2536;
+      --surface-3: #252d3d;
+      --border: rgba(255,255,255,0.07);
+      --text: #e2e8f0;
+      --text-muted: #8892a4;
+      --text-dim: #4a5568;
+
+      --purple: #a78bfa;
+      --purple-dim: rgba(167, 139, 250, 0.12);
+      --blue: #60a5fa;
+      --blue-dim: rgba(96, 165, 250, 0.12);
+      --amber: #fbbf24;
+      --amber-dim: rgba(251, 191, 36, 0.10);
+      --teal: #34d399;
+      --teal-dim: rgba(52, 211, 153, 0.10);
+      --rose: #f87171;
+      --rose-dim: rgba(248, 113, 113, 0.10);
+      --cyan: #22d3ee;
+      --cyan-dim: rgba(34, 211, 238, 0.10);
+
+      --radius: 12px;
+      --radius-sm: 8px;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      min-height: 100vh;
+      transition: grid-template-columns 0.25s ease;
+    }
+
+    .layout.sidebar-collapsed {
+      grid-template-columns: 0px 1fr;
+    }
+
+    /* ── Sidebar ─────────────────────────────────── */
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      overflow-x: hidden;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 2rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      transition: opacity 0.2s ease, transform 0.25s ease, padding 0.25s ease;
+      white-space: nowrap;
+    }
+
+    .layout.sidebar-collapsed .sidebar {
+      opacity: 0;
+      pointer-events: none;
+      padding-left: 0;
+      padding-right: 0;
+      border-right: none;
+      transform: translateX(-100%);
+    }
+
+    /* ── Sidebar Toggle Button ────────────────────── */
+    .sidebar-toggle-btn {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 1.5rem;
+      z-index: 999;
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+      transition: background 0.2s, transform 0.15s, border-color 0.2s;
+    }
+
+    .sidebar-toggle-btn:hover {
+      background: var(--surface-3);
+      border-color: rgba(255,255,255,0.2);
+      transform: scale(1.05);
+    }
+
+    .sidebar-toggle-btn:active {
+      transform: scale(0.95);
+    }
+
+    .sidebar-logo {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.75rem;
+      padding-left: 0.25rem;
+    }
+
+    .sidebar-logo-content {
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+    }
+
+    .sidebar-close-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      font-size: 1rem;
+      cursor: pointer;
+      padding: 0.25rem;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.15s, background 0.15s;
+    }
+
+    .sidebar-close-btn:hover {
+      color: var(--text);
+      background: var(--surface-2);
+    }
+
+    .sidebar-logo .logo-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, var(--teal), var(--blue));
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .sidebar-logo span {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.3;
+    }
+
+    .nav-section-label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      padding: 0.75rem 0.5rem 0.25rem;
+      margin-top: 0.5rem;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.45rem 0.625rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .nav-link:hover, .nav-link.active {
+      background: var(--surface-2);
+      color: var(--text);
+    }
+
+    .nav-link .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* ── Main ─────────────────────────────────────── */
+    .main {
+      padding: 3rem 4rem;
+      max-width: 1200px;
+      width: 100%;
+    }
+
+    .hero { margin-bottom: 3.5rem; }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      background: var(--teal-dim);
+      border: 1px solid rgba(52,211,153,0.25);
+      color: var(--teal);
+      font-size: 0.75rem;
+      font-weight: 500;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      margin-bottom: 1rem;
+    }
+
+    .hero h1 {
+      font-size: 2.25rem;
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      margin-bottom: 1rem;
+    }
+
+    .hero p {
+      font-size: 1rem;
+      color: var(--text-muted);
+      max-width: 850px;
+      line-height: 1.8;
+    }
+
+    .tech-stack {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 1.5rem;
+    }
+
+    .tech-pill {
+      font-size: 0.75rem;
+      font-weight: 500;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    section {
+      margin-bottom: 3.5rem;
+      scroll-margin-top: 2rem;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .section-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+
+    h3 {
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.625rem;
+    }
+
+    p { color: var(--text-muted); font-size: 0.9rem; line-height: 1.8; margin-bottom: 0.75rem; }
+    p:last-child { margin-bottom: 0; }
+
+    hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 2.5rem 0;
+    }
+
+    code {
+      font-size: 0.8rem;
+      font-family: var(--font-mono);
+      background: var(--surface-3);
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      color: var(--text-muted);
+    }
+
+    /* ── Diagram ──────────────────────────────────── */
+    .diagram-wrapper {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem 1.5rem;
+      overflow-x: auto;
+    }
+
+    .diagram-wrapper .mermaid {
+      display: flex;
+      justify-content: center;
+    }
+
+    /* ── Architecture Layers ──────────────────────── */
+    .arch-layers { display: flex; flex-direction: column; gap: 1rem; }
+
+    .arch-layer {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .arch-layer-header {
+      padding: 0.75rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.8125rem;
+      font-weight: 600;
+    }
+
+    .arch-layer-body {
+      padding: 1rem 1.25rem;
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      background: rgba(0,0,0,0.15);
+    }
+
+    .agent-chip {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 0.875rem;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      color: var(--text);
+    }
+
+    .agent-chip .chip-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* ── Agent Cards ──────────────────────────────── */
+    .agent-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .agent-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      transition: border-color 0.2s, transform 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .agent-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.2s;
+      pointer-events: none;
+    }
+
+    .agent-card:hover { transform: translateY(-2px); }
+    .agent-card:hover::before { opacity: 1; }
+
+    .agent-card.purple { border-top: 2px solid var(--purple); }
+    .agent-card.purple::before { background: var(--purple-dim); }
+    .agent-card.blue { border-top: 2px solid var(--blue); }
+    .agent-card.blue::before { background: var(--blue-dim); }
+    .agent-card.amber { border-top: 2px solid var(--amber); }
+    .agent-card.amber::before { background: var(--amber-dim); }
+    .agent-card.teal { border-top: 2px solid var(--teal); }
+    .agent-card.teal::before { background: var(--teal-dim); }
+    .agent-card.rose { border-top: 2px solid var(--rose); }
+    .agent-card.rose::before { background: var(--rose-dim); }
+    .agent-card.cyan { border-top: 2px solid var(--cyan); }
+    .agent-card.cyan::before { background: var(--cyan-dim); }
+
+    .agent-card-header {
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+      margin-bottom: 0.625rem;
+    }
+
+    .agent-card-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+
+    .agent-card h3 { margin: 0; font-size: 0.875rem; }
+    .agent-card p { font-size: 0.8125rem; margin: 0; }
+
+    .agent-card code {
+      font-size: 0.725rem;
+      font-family: var(--font-mono);
+      background: var(--surface-3);
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      color: var(--text-muted);
+    }
+
+    .agent-meta {
+      margin-top: 0.75rem;
+      display: flex;
+      gap: 0.375rem;
+      flex-wrap: wrap;
+    }
+
+    .routes-to {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      margin-bottom: 0.25rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    /* ── Flow Steps ───────────────────────────────── */
+    .flow-steps { display: flex; flex-direction: column; gap: 0; }
+
+    .flow-step { display: flex; gap: 1.25rem; }
+
+    .flow-step-left {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex-shrink: 0;
+      width: 36px;
+    }
+
+    .step-number {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      z-index: 1;
+    }
+
+    .step-line {
+      width: 1px;
+      flex: 1;
+      min-height: 1.5rem;
+      background: var(--border);
+      margin: 4px 0;
+    }
+
+    .flow-step-content {
+      padding: 0 0 2rem 0;
+      flex: 1;
+      padding-top: 0.4rem;
+    }
+
+    .flow-step-content h3 { font-size: 0.9rem; margin-bottom: 0.25rem; }
+
+    /* ── Framework Cards (Full-Width Split) ────────── */
+    .framework-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .framework-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      transition: border-color 0.2s, transform 0.2s;
+      position: relative;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 1fr 1.35fr;
+      gap: 1.75rem;
+      align-items: start;
+    }
+
+    @media (max-width: 960px) {
+      .framework-card {
+        grid-template-columns: 1fr;
+        gap: 1.25rem;
+      }
+    }
+
+    .framework-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.2s;
+      pointer-events: none;
+    }
+
+    .framework-card:hover { transform: translateY(-2px); }
+    .framework-card:hover::before { opacity: 1; }
+
+    .framework-card.purple { border-top: 2px solid var(--purple); }
+    .framework-card.purple::before { background: var(--purple-dim); }
+    .framework-card.blue { border-top: 2px solid var(--blue); }
+    .framework-card.blue::before { background: var(--blue-dim); }
+    .framework-card.amber { border-top: 2px solid var(--amber); }
+    .framework-card.amber::before { background: var(--amber-dim); }
+
+    .framework-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    /* ── Example Box (Inside Cards) ───────────────── */
+    .example-box {
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 1rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .example-box-header {
+      font-size: 0.78rem;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      letter-spacing: 0.02em;
+    }
+
+    .example-box-task {
+      font-size: 0.825rem;
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .example-box-steps {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      line-height: 1.65;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.75rem 1rem;
+      margin-top: 0.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .example-box-steps code {
+      font-size: 0.75rem;
+      background: var(--surface-3);
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+      color: var(--cyan);
+    }
+
+    /* ── State Box ────────────────────────────────── */
+    .state-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      display: flex;
+      gap: 2rem;
+    }
+
+    .state-field { flex: 1; }
+    .state-field-name { font-family: var(--font-mono); font-size: 0.85rem; font-weight: 500; color: var(--blue); margin-bottom: 0.25rem; }
+    .state-field-type { font-family: var(--font-mono); font-size: 0.75rem; color: var(--purple); margin-bottom: 0.5rem; }
+    .state-field p { font-size: 0.8rem; margin: 0; }
+
+    /* ── Callout ──────────────────────────────────── */
+    .callout {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid;
+      border-radius: var(--radius-sm);
+      padding: 1rem 1.25rem;
+      margin: 1rem 0;
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .callout.info { border-left-color: var(--blue); }
+    .callout.warn { border-left-color: var(--amber); }
+    .callout.danger { border-left-color: var(--rose); }
+    .callout.success { border-left-color: var(--teal); }
+    .callout .callout-icon { font-size: 1rem; flex-shrink: 0; margin-top: 0.1rem; }
+    .callout p { margin: 0; font-size: 0.825rem; }
+
+    /* ── Concept Table ────────────────────────────── */
+    .concept-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      font-size: 0.85rem;
+    }
+
+    .concept-table th {
+      text-align: left;
+      padding: 0.75rem 1rem;
+      background: var(--surface-2);
+      color: var(--text);
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .concept-table td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+
+    .concept-table tr:hover td {
+      background: var(--surface);
+    }
+
+    .concept-table .label {
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+    }
+
+    /* ── Project Card (full width) ────────────────── */
+    .project-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      border-left: 3px solid;
+    }
+
+    .project-card h3 {
+      font-size: 1rem;
+      margin-bottom: 0.4rem;
+    }
+
+    .project-card .project-meta {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 0.75rem;
+    }
+
+    /* ── Mini Flow ────────────────────────────────── */
+    .mini-flow {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      flex-wrap: wrap;
+      padding: 0.9rem 1.25rem;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      overflow-x: auto;
+      margin-top: 1rem;
+    }
+
+    .mini-flow-node {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.3rem 0.7rem;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: 500;
+      border: 1px solid var(--border);
+      background: var(--surface-3);
+      color: var(--text-muted);
+      white-space: nowrap;
+      font-family: var(--font-mono);
+    }
+
+    .mini-flow-node.active {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .mini-flow-arrow {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      padding: 0 0.35rem;
+      flex-shrink: 0;
+    }
+
+    .mini-flow-label {
+      font-size: 0.62rem;
+      color: var(--text-dim);
+      margin-top: 0.2rem;
+      text-align: center;
+    }
+
+    .mini-flow-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.1rem;
+    }
+
+    /* ── Implementation Status ────────────────────── */
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    .status-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .status-card .status-emoji {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .status-card .status-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.25rem;
+    }
+
+    .status-card .status-state {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+    }
+
+    /* ── Responsive ───────────────────────────────── */
+    @media (max-width: 960px) {
+      .framework-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 780px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+      .main { padding: 2rem 1.25rem; }
+      .agent-grid { grid-template-columns: 1fr; }
+      .framework-grid { grid-template-columns: 1fr; }
+      .state-box { flex-direction: column; gap: 1rem; }
+      .status-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+<body>
+
+<button class="sidebar-toggle-btn" id="sidebarToggle" title="Toggle Navigation Sidebar (Press [ )" aria-label="Toggle Sidebar">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+    <line x1="9" y1="3" x2="9" y2="21"></line>
+  </svg>
+</button>
+
+<div class="layout" id="layoutContainer">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-content">
+        <div class="logo-icon">🤖</div>
+        <span>PM Learning<br>Agent Lab</span>
+      </div>
+      <button class="sidebar-close-btn" id="sidebarCloseBtn" title="Hide Sidebar" aria-label="Close Sidebar">✕</button>
+    </div>
+
+    <span class="nav-section-label">Foundation</span>
+    <a class="nav-link" href="#overview"><span class="dot" style="background:var(--teal)"></span>Overview</a>
+    <a class="nav-link" href="#framework"><span class="dot" style="background:var(--purple)"></span> Framework</a>
+    <a class="nav-link" href="#agent-loop"><span class="dot" style="background:var(--blue)"></span>The Agent Loop</a>
+    <a class="nav-link" href="#lifecycle"><span class="dot" style="background:var(--amber)"></span>Agent Lifecycle</a>
+    <a class="nav-link" href="#components"><span class="dot" style="background:var(--teal)"></span>Core Components</a>
+
+    <span class="nav-section-label">Projects</span>
+    <a class="nav-link" href="#project-1"><span class="dot" style="background:var(--teal)"></span>1 &mdash; Stock Monitor</a>
+    <a class="nav-link" href="#project-2"><span class="dot" style="background:var(--blue)"></span>2 &mdash; Deep Researcher</a>
+    <a class="nav-link" href="#project-3"><span class="dot" style="background:var(--amber)"></span>3 &mdash; Support Router</a>
+    <a class="nav-link" href="#project-4"><span class="dot" style="background:var(--rose)"></span>4 &mdash; Travel Agency</a>
+
+    <span class="nav-section-label">Scenarios</span>
+    <a class="nav-link" href="#scenario-1"><span class="dot" style="background:var(--cyan)"></span>Scenario 1: Support Agent</a>
+
+    <span class="nav-section-label">Reference</span>
+    <a class="nav-link" href="#progression"><span class="dot" style="background:var(--purple)"></span>Learning Progression</a>
+    <a class="nav-link" href="#failure-modes"><span class="dot" style="background:var(--rose)"></span>Failure Modes</a>
+    <a class="nav-link" href="#status"><span class="dot" style="background:var(--text-dim)"></span>Status Dashboard</a>
+  </aside>
+
+  <main class="main">
+
+    <!-- ══════════════════ HERO ══════════════════ -->
+    <div class="hero" id="overview">
+      <div class="hero-badge">
+        <span>&#x2B22;</span>  Agent Framework
+      </div>
+      <h1>Autonomous Agents<br>Learning Lab</h1>
+      <p>Four progressive, hands-on projects designed to deeply explore how production autonomous agents work. Each project isolates specific <strong>properties</strong>, <strong>components</strong>, and <strong>lifecycle phases</strong> from  framework &mdash; building from a simple reactive monitor to a full multi-agent negotiation system.</p>
+      <div class="tech-stack">
+        <span class="tech-pill">Python 3.11+</span>
+        <span class="tech-pill">Gemini API</span>
+        <span class="tech-pill">ChromaDB</span>
+        <span class="tech-pill">SQLite</span>
+        <span class="tech-pill">feedparser</span>
+        <span class="tech-pill">requests</span>
+      </div>
+    </div>
+
+    <hr />
+
+    <!-- ══════════════════ WILLIAMS FRAMEWORK ══════════════════ -->
+    <section id="framework">
+      <div class="section-header">
+        <div class="section-icon" style="background:var(--purple-dim)">🧠</div>
+        <h2> Agent Framework</h2>
+      </div>
+      <p>Williams defines an autonomous agent through <strong>four fundamental properties</strong> that exist on a spectrum. No agent is fully autonomous or fully reactive &mdash; production agents are tuned along these axes based on the risk and complexity of the domain.</p>
+
+      <div class="agent-grid" style="margin-top:1.25rem">
+        <div class="agent-card purple">
+          <div class="agent-card-header">
+            <div class="agent-card-icon" style="background:var(--purple-dim)">🔓</div>
+            <div>
+              <h3>Autonomy</h3>
+              <code>spectrum: manual → copilot → autonomous</code>
+            </div>
+          </div>
+          <p>Operates without constant human oversight. Production agents escalate edge cases rather than acting blindly on uncertain inputs.</p>
+        </div>
+
+        <div class="agent-card teal">
+          <div class="agent-card-header">
+            <div class="agent-card-icon" style="background:var(--teal-dim)">⚡</div>
+            <div>
+              <h3>Reactivity</h3>
+              <code>perceives → responds → adapts</code>
+            </div>
+          </div>
+          <p>Perceives and responds to environmental changes. Must filter noise to avoid infinite reaction loops on the same stimulus.</p>
+        </div>
+
+        <div class="agent-card blue">
+          <div class="agent-card-header">
+            <div class="agent-card-icon" style="background:var(--blue-dim)">🎯</div>
+            <div>
+              <h3>Proactivity</h3>
+              <code>goal → decompose → plan → execute</code>
+            </div>
+          </div>
+          <p>Takes initiative toward goal achievement. Requires robust planning and the ability to decompose vague goals into concrete steps.</p>
+        </div>
+
+        <div class="agent-card amber">
+          <div class="agent-card-header">
+            <div class="agent-card-icon" style="background:var(--amber-dim)">💬</div>
+            <div>
+              <h3>Social Ability</h3>
+              <code>agent ↔ agent, agent ↔ human</code>
+            </div>
+          </div>
+          <p>Communicates with other agents or humans when needed. Enables multi-agent collaboration and human-in-the-loop escalation.</p>
+        </div>
+      </div>
+
+      <div class="callout info" style="margin-top:1.25rem">
+        <span class="callout-icon">💡</span>
+        <p>These properties are <strong>dials, not switches</strong>. A customer support agent might exhibit strong autonomy for password resets (low risk) while escalating refund requests over $200 to a human (high risk). Each project in this lab explores a different position on these dials.</p>
+      </div>
+    </section>
+
+    <hr />
+
+    <!-- ══════════════════ AGENT LOOP ══════════════════ -->
+    <section id="agent-loop">
+      <div class="section-header">
+        <div class="section-icon" style="background:var(--blue-dim)">🔄</div>
+        <h2>The Agent Loop</h2>
+      </div>
+      <p>The fundamental execution pattern of every autonomous agent. Regardless of complexity, every agent follows this cycle:</p>
+
+      <div class="diagram-wrapper" style="margin-top:1.25rem">
+        <div class="mermaid">
+graph LR
+    A["🔍 Perceive"] --> B["🧠 Reason"]
+    B --> C["⚡ Act"]
+    C --> D["👁️ Observe"]
+    D --> E["💾 Store"]
+    E --> A
+        </div>
+      </div>
+
+      <div class="callout warn" style="margin-top:1.25rem">
+        <span class="callout-icon">⚠️</span>
+        <p>Williams emphasizes that <strong>production failures almost always trace back to a breakdown in one of the four components</strong> (Perception, Reasoning, Action, Memory) rather than model capability. The LLM is rarely the bottleneck &mdash; it's the plumbing around it.</p>
+      </div>
+
+      <div class="mini-flow" style="margin-top:1rem">
+        <div class="mini-flow-col">
+          <div class="mini-flow-node active" style="border-color:rgba(52,211,153,0.35); color:var(--teal)">Perceive</div>
+          <div class="mini-flow-label">RSS, API, webhook</div>
+        </div>
+        <span class="mini-flow-arrow">→</span>
+        <div class="mini-flow-col">
+          <div class="mini-flow-node active" style="border-color:rgba(96,165,250,0.35); color:var(--blue)">Reason</div>
+          <div class="mini-flow-label">LLM inference</div>
+        </div>
+        <span class="mini-flow-arrow">→</span>
+        <div class="mini-flow-col">
+          <div class="mini-flow-node active" style="border-color:rgba(251,191,36,0.35); color:var(--amber)">Act</div>
+          <div class="mini-flow-label">tool calls, API</div>
+        </div>
+        <span class="mini-flow-arrow">→</span>
+        <div class="mini-flow-col">
+          <div class="mini-flow-node active" style="border-color:rgba(167,139,250,0.35); color:var(--purple)">Observe</div>
+          <div class="mini-flow-label">check result</div>
+        </div>
+        <span class="mini-flow-arrow">→</span>
+        <div class="mini-flow-col">
+          <div class="mini-flow-node active" style="border-color:rgba(248,113,113,0.35); color:var(--rose)">Store</div>
+          <div class="mini-flow-label">SQLite, vectors</div>
+        </div>
+        <span class="mini-flow-arrow">↺</span>
+      </div>
+    </section>
+
+    <hr />
+
+    <!-- ══════════════════ LIFECYCLE ══════════════════ -->
+    <section id="lifecycle">
+      <div class="section-header">
+        <div class="section-icon" style="background:var(--amber-dim)">📋</div>
+        <h2>The Agent Lifecycle (5 Phases)</h2>
+      </div>
+      <p>While the Agent Loop is the <em>micro</em> execution pattern, the Lifecycle is the <em>macro</em> view of how a production agent handles a complete task from start to finish.</p>
+
+      <div class="diagram-wrapper" style="margin-top:1.25rem">
+        <div class="mermaid">
+graph TD
+    T["📥 1. Task Reception"] --> P["📋 2. Planning"]
+    P --> E["⚙️ 3. Execution"]
+    E --> V{"✅ 4. Verification"}
+    V -->|"Pass"| D["📤 5. Delivery"]
+    V -->|"Fail: re-plan"| P
+    E -->|"Tool failure: retry"| E
+        </div>
+      </div>
+
+      <div class="flow-steps" style="margin-top:1.5rem">
+        <div class="flow-step">
+          <div class="flow-step-left">
+            <div class="step-number" style="background:var(--teal-dim); border-color:rgba(52,211,153,0.3); color:var(--teal)">1</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="flow-step-content">
+            <h3>Task Reception</h3>
+            <p>The agent receives a goal through an API call, scheduled trigger, or user request. <strong>Critical question:</strong> Is the goal well-defined enough to act on?</p>
+          </div>
+        </div>
+
+        <div class="flow-step">
+          <div class="flow-step-left">
+            <div class="step-number" style="background:var(--blue-dim); border-color:rgba(96,165,250,0.3); color:var(--blue)">2</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="flow-step-content">
+            <h3>Planning</h3>
+            <p>The agent decomposes the goal into subtasks and selects tools. <strong>Critical question:</strong> Can the agent recover if the plan is wrong?</p>
+          </div>
+        </div>
+
+        <div class="flow-step">
+          <div class="flow-step-left">
+            <div class="step-number" style="background:var(--amber-dim); border-color:rgba(251,191,36,0.3); color:var(--amber)">3</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="flow-step-content">
+            <h3>Execution</h3>
+            <p>The agent iteratively calls tools, processes results, and updates its plan. <strong>Critical question:</strong> What happens when a tool call fails?</p>
+          </div>
+        </div>
+
+        <div class="flow-step">
+          <div class="flow-step-left">
+            <div class="step-number" style="background:var(--purple-dim); border-color:rgba(167,139,250,0.3); color:var(--purple)">4</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="flow-step-content">
+            <h3>Verification</h3>
+            <p>The agent evaluates whether the output meets the goal criteria. <strong>Critical question:</strong> How does the agent know it succeeded?</p>
+          </div>
+        </div>
+
+        <div class="flow-step">
+          <div class="flow-step-left">
+            <div class="step-number" style="background:var(--teal-dim); border-color:rgba(52,211,153,0.3); color:var(--teal)">5</div>
+          </div>
+          <div class="flow-step-content" style="padding-bottom:0">
+            <h3>Delivery</h3>
+            <p>The agent returns results, logs outcomes, and updates its episodic memory for future reference. <strong>Critical question:</strong> Is the memory useful for future tasks?</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <hr />
+
+    <!-- ══════════════════ CORE COMPONENTS ══════════════════ -->
+    <section id="components">
+      <div class="section-header">
+        <div class="section-icon" style="background:var(--teal-dim)">🧩</div>
+        <h2>Core Components</h2>
+      </div>
+      <p>Every autonomous agent, regardless of complexity, is built from four foundational components. The interplay between them creates the Agent Loop.</p>
+
+      <div class="agent-grid" style="margin-top:1.25rem">
+        <div class="agent-card teal">
+          <div class="agent-card-header">
+            <div class="agent-card-icon" style="background:var(--teal-dim)">🔍</div>
+            <div><h3>Perception</h3></div>
+          </div>
+          <p>Ingests and interprets inputs from the environment. Transforms raw data into structured information the Reasoning component can use.</p>
+          <div class="agent-meta">
+            <span class="tech-pill">API webhooks</span>
+            <span class="tech-pill">RSS feeds</span>
+            <span class="tech-pill">document parsers</span>
+            <span class="tech-pill">sensor feeds</span>
+          </div>
+        </div>
+
+        <div class="agent-card blue">
+          <div class="agent-card-header">
+            <div class="agent-card-icon" style="background:var(--blue-dim)">🧠</div>
+            <div><h3>Reasoning</h3></div>
+          </div>
+          <p>The brain &mdash; analyzes perceived information, creates plans, selects tools, makes decisions. Most visible failures happen here, but root cause is often elsewhere.</p>
+          <div class="agent-meta">
+            <span class="tech-pill">LLM inference</span>
+            <span class="tech-pill">prompt templates</span>
+            <span class="tech-pill">planning algorithms</span>
+          </div>
+        </div>
+
+        <div class="agent-card amber">
+          <div class="agent-card-header">
+            <div class="agent-card-icon" style="background:var(--amber-dim)">⚡</div>
+            <div><h3>Action</h3></div>
+          </div>
+          <p>The hands &mdash; executes decisions by interacting with external systems. Unlike other components, actions have <strong>side effects</strong> and can cause real damage.</p>
+          <div class="agent-meta">
+            <span class="tech-pill">tool calls</span>
+            <span class="tech-pill">API invocations</span>
+            <span class="tech-pill">database writes</span>
+            <span class="tech-pill">code execution</span>
+          </div>
+        </div>
+
+        <div class="agent-card rose">
+          <div class="agent-card-header">
+            <div class="agent-card-icon" style="background:var(--rose-dim)">💾</div>
+            <div><h3>Memory</h3></div>
+          </div>
+          <p>Stores and retrieves past experiences, knowledge, and context. The most underestimated component &mdash; without it, agents repeat mistakes and lose context.</p>
+          <div class="agent-meta">
+            <span class="tech-pill">vector stores</span>
+            <span class="tech-pill">conversation buffers</span>
+            <span class="tech-pill">episodic logs</span>
+            <span class="tech-pill">knowledge graphs</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Memory Types -->
+      <h3 style="margin-top:1.5rem">Memory Types</h3>
+      <div class="state-box" style="margin-top:0.75rem">
+        <div class="state-field">
+          <div class="state-field-name">Short-Term</div>
+          <div class="state-field-type">conversation buffer / context window</div>
+          <p>Current task context. What the agent is working on right now. Limited by the LLM's context window.</p>
+        </div>
+        <div class="state-field">
+          <div class="state-field-name">Episodic</div>
+          <div class="state-field-type">SQLite / structured logs</div>
+          <p>Logs of past agent runs, outcomes, and decisions. "What worked last time I tried this?"</p>
+        </div>
+        <div class="state-field">
+          <div class="state-field-name">Semantic</div>
+          <div class="state-field-type">vector stores / knowledge graphs</div>
+          <p>Long-term domain knowledge retrieval. Company policies, documentation, facts about the world.</p>
+        </div>
+      </div>
+
+      <!-- Reasoning & Logic Frameworks -->
+      <h3 style="margin-top:2rem">Reasoning &amp; Logic Frameworks</h3>
+      <p style="margin-top:0.5rem">The model used by an agent can be one or multiple LMs of any size (small / large) that are capable of following instruction-based reasoning and logic frameworks, like <strong>ReAct</strong>, <strong>Chain-of-Thought</strong>, or <strong>Tree-of-Thoughts</strong>. The choice of framework dictates how the agent navigates complex problem spaces:</p>
+
+      <div class="diagram-wrapper" style="margin-top:1rem">
+        <div class="mermaid">
+graph LR
+    subgraph CoT["1. Chain-of-Thought (CoT)"]
+        direction TB
+        Input1["Input"] --> Thought1["Step 1 Thought"]
+        Thought1 --> Thought2["Step 2 Thought"]
+        Thought2 --> Output1["Final Output"]
+    end
+
+    subgraph ReAct["2. ReAct (Reason + Act)"]
+        direction TB
+        Input2["Input"] --> RThought["Thought"]
+        RThought --> RAct["Action (Tool Call)"]
+        RAct --> RObs["Observation"]
+        RObs --> RThought2["Thought 2"]
+        RThought2 --> Output2["Final Answer"]
+    end
+
+    subgraph ToT["3. Tree-of-Thoughts (ToT)"]
+        direction TB
+        Input3["Input"] --> Branch1["Thought Path A"]
+        Input3 --> Branch2["Thought Path B"]
+        Input3 --> Branch3["Thought Path C"]
+        Branch1 --> Eval1["❌ Reject / Backtrack"]
+        Branch2 --> Branch21["Sub-thought B.1"]
+        Branch21 --> Output3["✅ Best Path Output"]
+    end
+        </div>
+      </div>
+
+      <div class="framework-list" style="margin-top:1.25rem">
+        <!-- Chain-of-Thought -->
+        <div class="framework-card blue">
+          <div class="framework-info">
+            <div class="agent-card-header">
+              <div class="agent-card-icon" style="background:var(--blue-dim)">💭</div>
+              <div>
+                <h3 style="font-size:1rem">Chain-of-Thought (CoT)</h3>
+                <span class="tech-pill" style="display:inline-block; margin-top:0.25rem; font-size:0.72rem">Linear Derivation</span>
+              </div>
+            </div>
+            <p style="font-size:0.875rem">The model generates an internal sequence of intermediate reasoning steps before delivering the final answer ($x \to z_1 \to z_2 \to \dots \to y$). Best for math, multi-step deductions, and arithmetic planning without external tools.</p>
+            <div class="agent-meta">
+              <span class="tech-pill">Math &amp; Arithmetic</span>
+              <span class="tech-pill">Multi-Step Deductions</span>
+              <span class="tech-pill">Internal Reasoning</span>
+            </div>
+          </div>
+          
+          <div class="example-box">
+            <div class="example-box-header" style="color:var(--blue)">💡 Concrete Execution Trace</div>
+            <div class="example-box-task"><strong>Task:</strong> "Calculate customer's refund: $120 item returned, 15% restocking fee, $10 shipping credit applied."</div>
+            <div class="example-box-steps">
+              <div><strong style="color:var(--blue)">Thought 1:</strong> Calculate restocking fee: $120 &times; 0.15 = $18.</div>
+              <div><strong style="color:var(--blue)">Thought 2:</strong> Subtract restocking fee from base: $120 &minus; $18 = $102.</div>
+              <div><strong style="color:var(--blue)">Thought 3:</strong> Add shipping credit: $102 + $10 = $112.</div>
+              <div style="margin-top:0.25rem; padding-top:0.35rem; border-top:1px dashed var(--border)"><strong style="color:var(--teal)">Output:</strong> "Total refund approved is $112.00."</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ReAct -->
+        <div class="framework-card amber">
+          <div class="framework-info">
+            <div class="agent-card-header">
+              <div class="agent-card-icon" style="background:var(--amber-dim)">🔄</div>
+              <div>
+                <h3 style="font-size:1rem">ReAct (Reason + Act)</h3>
+                <span class="tech-pill" style="display:inline-block; margin-top:0.25rem; font-size:0.72rem">Interleaved Loop</span>
+              </div>
+            </div>
+            <p style="font-size:0.875rem">Synergizes reasoning and acting by interleaving <strong>Thought &rarr; Action &rarr; Observation</strong> loops. The agent reasons about what tool to call, inspects the environment response, and dynamically adapts its next step.</p>
+            <div class="agent-meta">
+              <span class="tech-pill">Tool Invocation</span>
+              <span class="tech-pill">Dynamic Planning</span>
+              <span class="tech-pill">API Grounding</span>
+            </div>
+          </div>
+          
+          <div class="example-box">
+            <div class="example-box-header" style="color:var(--amber)">💡 Concrete Execution Trace</div>
+            <div class="example-box-task"><strong>Task:</strong> "Check if NVDA has unusual trading volume today and alert if &gt; 2x 30-day average."</div>
+            <div class="example-box-steps">
+              <div><strong style="color:var(--amber)">Thought 1:</strong> I need current NVDA volume and 30-day average.</div>
+              <div><strong style="color:var(--blue)">Action:</strong> <code>yfinance.get_stats("NVDA")</code></div>
+              <div><strong style="color:var(--teal)">Observation:</strong> <code>{"current_vol": 85M, "avg_30d": 38M}</code></div>
+              <div><strong style="color:var(--amber)">Thought 2:</strong> 85M / 38M = 2.24x (&gt; 2x threshold). Trigger alert.</div>
+              <div><strong style="color:var(--blue)">Action:</strong> <code>slack.send_alert("#trading-desk", "NVDA vol 2.24x")</code></div>
+              <div style="margin-top:0.25rem; padding-top:0.35rem; border-top:1px dashed var(--border)"><strong style="color:var(--teal)">Observation:</strong> <code>{"status": "delivered"}</code> &rarr; Completed</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tree-of-Thoughts -->
+        <div class="framework-card purple">
+          <div class="framework-info">
+            <div class="agent-card-header">
+              <div class="agent-card-icon" style="background:var(--purple-dim)">🌳</div>
+              <div>
+                <h3 style="font-size:1rem">Tree-of-Thoughts (ToT)</h3>
+                <span class="tech-pill" style="display:inline-block; margin-top:0.25rem; font-size:0.72rem">Branching &amp; Backtracking</span>
+              </div>
+            </div>
+            <p style="font-size:0.875rem">Extends linear reasoning into a search tree. The agent explores multiple candidate solution branches simultaneously, self-evaluates intermediate states with heuristic scoring, and backtracks when a path fails.</p>
+            <div class="agent-meta">
+              <span class="tech-pill">System Architecture</span>
+              <span class="tech-pill">Heuristic Search</span>
+              <span class="tech-pill">Lookahead &amp; Backtracking</span>
+            </div>
+          </div>
+          
+          <div class="example-box">
+            <div class="example-box-header" style="color:var(--purple)">💡 Concrete Execution Trace</div>
+            <div class="example-box-task"><strong>Task:</strong> "Design a fault-tolerant database architecture for 50k req/s with &lt;10ms latency."</div>
+            <div class="example-box-steps">
+              <div><strong style="color:var(--purple)">Branch A:</strong> Single master + read replicas. <span style="color:var(--rose)">[Eval: 4/10 &mdash; write bottleneck]</span> &rarr; <strong>Backtrack</strong>.</div>
+              <div><strong style="color:var(--purple)">Branch B:</strong> Sharded PostgreSQL + Redis cache. <span style="color:var(--teal)">[Eval: 8/10 &mdash; low latency]</span> &rarr; <strong>Expand B.1</strong>.</div>
+              <div><strong style="color:var(--purple)">Branch C:</strong> Multi-region DynamoDB. <span style="color:var(--amber)">[Eval: 7/10 &mdash; high egress cost]</span>.</div>
+              <div style="margin-top:0.25rem; padding-top:0.35rem; border-top:1px dashed var(--border)"><strong style="color:var(--teal)">Selected:</strong> Branch B.1 with localized write routing.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <hr />
+
+    <!-- ══════════════════ PROJECT 1 ══════════════════ -->
+    <section id="project-1">
+      <div class="section-header">
+        <div class="section-icon" style="background:var(--teal-dim)">📈</div>
+        <h2>Project 1 &mdash; Stock/News Monitor</h2>
+      </div>
+      <p>Build an agent that continuously monitors a live data stream and alerts you when it detects something relevant &mdash; while avoiding duplicate alerts. This is the foundational project that teaches the Agent Loop through direct implementation.</p>
+
+      <table class="concept-table" style="margin-top:1rem">
+        <thead>
+          <tr><th>Concept</th><th>How This Project Teaches It</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="label">Reactivity</td><td>Agent responds to new articles/price changes in real time</td></tr>
+          <tr><td class="label">Perception</td><td>Ingesting and filtering noisy RSS/API data into structured info</td></tr>
+          <tr><td class="label">Memory (Episodic)</td><td>SQLite dedup log prevents infinite alert loops</td></tr>
+          <tr><td class="label">Action</td><td>Discord webhook / email notifications with rate limiting</td></tr>
+          <tr><td class="label">Agent Loop</td><td>Full Perceive → Reason → Act → Observe → Store → Repeat</td></tr>
+        </tbody>
+      </table>
+
+      <!-- High-Level Architecture Diagram -->
+      <h3 style="margin-top:1.5rem">System Architecture</h3>
+      <div class="diagram-wrapper" style="margin-top:0.75rem">
+        <div class="mermaid">
+graph TD
+    subgraph Perception["🔍 Perception Layer"]
+        RSS["RSS Feed Parser"]
+        API["News API Client"]
+    end
+
+    subgraph Reasoning["🧠 Reasoning Layer"]
+        FILTER["Relevance Filter — LLM"]
+        DEDUP["Dedup Check — SQLite"]
+    end
+
+    subgraph Action["⚡ Action Layer"]
+        NOTIFY["Notification Sender"]
+    end
+
+    subgraph Memory["💾 Memory Layer"]
+        DB["SQLite Episodic Log"]
+    end
+
+    RSS --> FILTER
+    API --> FILTER
+    FILTER -->|"Relevant?"| DEDUP
+    DEDUP -->|"New item"| NOTIFY
+    DEDUP -->|"Already seen"| SKIP["Skip"]
+    NOTIFY --> DB
+    DB -->|"Feed dedup"| DEDUP
+        </div>
+      </div>
+
+      <!-- Execution Workflow Sequence Diagram -->
+      <h3 style="margin-top:2rem">Detailed Execution Workflow</h3>
+      <div class="diagram-wrapper" style="margin-top:0.75rem">
+        <div class="mermaid">
+sequenceDiagram
+    participant E as 🌐 External Sources (RSS / News API)
+    participant P as 🔍 Perception (perception.py)
+    participant R as 🧠 Reasoning (reasoning.py - Relevance Filter)
+    participant M as 💾 Memory (memory.py - SQLite Dedup)
+    participant A as ⚡ Action (action.py - Discord Webhook)
+
+    loop Polling Interval (Every 60 seconds)
+        P->>E: Fetch latest articles & tickers
+        E-->>P: Raw XML / JSON feeds (100+ noisy items)
+        Note over P: Ingest, clean HTML, extract title + summary
+        
+        loop For each ingested article
+            P->>R: Send normalized article text
+            Note over R: Relevance Filter evaluates against user criteria
+            R->>R: Calculate relevance score (0.0 to 1.0)
+            
+            alt Score < 0.75 (Noise / Irrelevant)
+                Note over R: 🗑️ Silently drop article. No alert.
+            else Score >= 0.75 (Material Event)
+                R->>M: Query URL hash / title: is_already_seen(hash)?
+                alt Already in Database (Seen)
+                    M-->>R: True (Duplicate)
+                    Note over R,M: 🚫 Skip alert to prevent infinite spam loop
+                else New Unseen Item
+                    M-->>R: False (New)
+                    R->>A: Trigger alert with summary & relevance score
+                    A->>A: Check rate limiter
+                    A-->>E: POST alert payload to Discord Webhook
+                    A->>M: log_alert(url_hash, timestamp, score)
+                    M-->>M: Commit episodic record to SQLite
+                    Note over A,M: ✅ Alert delivered & remembered
+                end
+            end
+        end
+    end
+        </div>
+      </div>
+
+      <!-- Execution Flow Think-Out-Loud Walkthrough -->
+      <h3 style="margin-top:2rem">🧠 Thinking Out Loud: Deconstructing the Project 1 Execution Flow</h3>
+      <p>How an engineer and PM deconstruct what is happening in this execution loop from first principles:</p>
+
+      <div class="state-box" style="margin-top:1rem; flex-direction:column; gap:1.25rem">
+        <div>
+          <div class="state-field-name">1. Perception is a Noise Filter, Not a Dumb Pipe</div>
+          <div class="state-field-type">Perception Layer Analysis</div>
+          <p style="margin-bottom:0.5rem"><em>"When we pull 10 RSS feeds every minute, we get 100+ articles. 95% are useless noise (e.g. clickbait, general gossip). If our agent forwarded all 100 to Discord, the user would mute the channel within 10 minutes. Perception’s job is to normalize and hand clean, structured data to the brain."</em></p>
+        </div>
+
+        <div>
+          <div class="state-field-name">2. What the 'Relevance Filter — LLM' is Actually Doing</div>
+          <div class="state-field-type">Reasoning Layer Analysis</div>
+          <p style="margin-bottom:0.5rem"><em>"The LLM doesn't just read the text; it performs semantic classification. We pass a few-shot prompt: 'Given this watchlist (NVDA, TSLA, Fed Rates), is this article materially actionable?' The LLM assigns a score from 0.0 to 1.0. If score &lt; 0.75, it gets discarded instantly without making any database writes or external calls."</em></p>
+        </div>
+
+        <div>
+          <div class="state-field-name">3. The Critical Role of SQLite Episodic Memory (Preventing the Spam Loop)</div>
+          <div class="state-field-type">Memory Layer Analysis</div>
+          <p style="margin-bottom:0.5rem"><em>"Why can't we just alert whenever an article is relevant? Because RSS feeds keep the same article on their front page for 6 hours! If our loop runs every 60 seconds, without memory we would send the <strong>exact same alert 360 times</strong>. The SQLite dedup table stores SHA-256 hashes of alerted URLs. Before acting, we do a $O(1)$ indexed lookup. If hash exists, abort."</em></p>
+        </div>
+
+        <div>
+          <div class="state-field-name">4. Action Layer with Side-Effects &amp; Rate Limiting</div>
+          <div class="state-field-type">Action Layer Analysis</div>
+          <p style="margin-bottom:0.5rem"><em>"Actions have real-world side effects. If 10 breaking news items hit simultaneously, we don't want to get rate-limited by Discord's webhook API (HTTP 429). The Action layer queues alerts and meters them smoothly, while simultaneously recording successful deliveries in the episodic database."</em></p>
+        </div>
+      </div>
+
+      <h3 style="margin-top:1.5rem">Component Architecture</h3>
+      <div class="arch-layers" style="margin-top:0.75rem">
+        <div class="arch-layer" style="border-color:rgba(52,211,153,0.25)">
+          <div class="arch-layer-header" style="background:var(--teal-dim); color:var(--teal)">
+            🔍 perception.py &mdash; Data Ingestion
+          </div>
+          <div class="arch-layer-body">
+            <div class="agent-chip"><span class="chip-dot" style="background:var(--teal)"></span>RSS Parser (feedparser)</div>
+            <div class="agent-chip"><span class="chip-dot" style="background:var(--teal)"></span>News API Client</div>
+            <div class="agent-chip"><span class="chip-dot" style="background:var(--teal)"></span>Article Dataclass</div>
+          </div>
+        </div>
+
+        <div class="arch-layer" style="border-color:rgba(96,165,250,0.25)">
+          <div class="arch-layer-header" style="background:var(--blue-dim); color:var(--blue)">
+            🧠 reasoning.py &mdash; Relevance Filtering
+          </div>
+          <div class="arch-layer-body">
+            <div class="agent-chip"><span class="chip-dot" style="background:var(--blue)"></span>Gemini Classification Prompt</div>
+            <div class="agent-chip"><span class="chip-dot" style="background:var(--blue)"></span>Relevance Score (0-1)</div>
+            <div class="agent-chip"><span class="chip-dot" style="background:var(--blue)"></span>Few-shot Examples</div>
+          </div>
+        </div>
+
+        <div class="arch-layer" style="border-color:rgba(251,191,36,0.25)">
+          <div class="arch-layer-header" style="background:var(--amber-dim); color:var(--amber)">
+            ⚡ action.py &mdash; Notification Delivery
+          </div>
+          <div class="arch-layer-body">
+            <div class="agent-chip"><span class="chip-dot" style="background:var(--amber)"></span>Discord Webhook</div>
+            <div class="agent-chip"><span class="chip-dot" style="background:var(--amber)"></span>Rate Limiter</div>
+            <div class="agent-chip"><span class="chip-dot" style="background:var(--amber)"></span>Alert Formatter</div>
+          </div>
+        </div>
+
+        <div class="arch-layer" style="border-color:rgba(248,113,113,0.25)">
+          <div class="arch-layer-header" style="background:var(--rose-dim); color:var(--rose)">
+            💾 memory.py &mdash; Episodic Log
+          </div>
+          <div class="arch-layer-body">
+            <div class="agent-chip"><span class="chip-dot" style="background:var(--rose)"></span>SQLite DB</div>
+            <div class="agent-chip"><span class="chip-dot" style="background:var(--rose)"></span>URL Hash Dedup</div>
+            <div class="agent-chip"><span class="chip-dot" style="background:var(--rose)"></span>Activity Log</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout success" style="margin-top:1rem">
+        <span class="callout-icon">🎓</span>
+        <p><strong>Key Learning:</strong> You'll discover that Perception needs to be a noise <em>filter</em>, not a data pipe. Without proper Memory (dedup), a reactive agent degenerates into an infinite spam loop.</p>
+      </div>
+    </section>
+
+    <hr />
+
+    <!-- ══════════════════ PROJECT 2 ══════════════════ -->
+    <section id="project-2">
+      <div class="section-header">
+        <div class="section-icon" style="background:var(--blue-dim)">🔬</div>
+        <h2>Project 2 &mdash; Deep-Dive Researcher</h2>
+      </div>
+      <p>Build an agent that takes a broad, vague research request and autonomously produces a comprehensive report &mdash; demonstrating all five phases of the Agent Lifecycle.</p>
+
+      <table class="concept-table" style="margin-top:1rem">
+        <thead>
+          <tr><th>Lifecycle Phase</th><th>Implementation</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="label">1. Task Reception</td><td>Natural language research query from user</td></tr>
+          <tr><td class="label">2. Planning</td><td>LLM decomposes query into 3-5 subtasks with search queries</td></tr>
+          <tr><td class="label">3. Execution</td><td>Iterative web search → read → extract → update plan loop</td></tr>
+          <tr><td class="label">4. Verification</td><td>Self-evaluation: "Did I cover all aspects of the question?"</td></tr>
+          <tr><td class="label">5. Delivery</td><td>Formatted markdown report + episodic log for future runs</td></tr>
+        </tbody>
+      </table>
+
+      <div class="diagram-wrapper" style="margin-top:1.25rem">
+        <div class="mermaid">
+graph TD
+    INPUT["📥 User Query"] --> DECOMPOSE["📋 Goal Decomposition"]
+    DECOMPOSE --> PLAN["Research Plan"]
+    PLAN --> SEARCH["🔍 Web Search"]
+    SEARCH --> READ["📖 Read and Extract"]
+    READ --> UPDATE["🔄 Update Plan"]
+    UPDATE -->|"More subtasks?"| SEARCH
+    UPDATE -->|"All done"| EVAL["✅ Self-Evaluation"]
+    EVAL -->|"Gaps found"| DECOMPOSE
+    EVAL -->|"Complete"| REPORT["📤 Generate Report"]
+    REPORT --> LOG["💾 Log to Memory"]
+        </div>
+      </div>
+
+      <h3 style="margin-top:1.5rem">Component Architecture</h3>
+      <div class="arch-layers" style="margin-top:0.75rem">
+        <div class="arch-layer" style="border-color:rgba(96,165,250,0.25)">
+          <div class="arch-layer-header" style="background:var(--blue-dim); color:var(--blue)">
+            📋 planner.py &mdash; Goal Decomposition
+          </div>
+          <div class="arch-layer-body">
+            <div class="agent-chip"><span class="chip-dot" style="background:var(--blue)"></span>Query Analyzer</div>
+            <div class="agent-chip"><span class="chip-dot" style="background:var(--blue)"></span>Subtask Generator</div>
+            <div class="agent-chip"><span class="chip-dot" style="background:var(--blue)"></span>Dynamic Re-planner</div>
+          </div>
+        </div>
+
+        <div class="arch-layer" style="border-color:rgba(52,211,153,0.25)">
+          <div class="arch-layer-header" style="background:var(--teal-dim); color:var(--teal)">
+            🔍 searcher.py &mdash; Web Search Tool
+          </div>
+          <div class="arch-layer-body">
+            <div class="agent-chip"><span class="chip-dot" style="background:var(--teal)"></span>Tavily / SerpAPI</div>
+            <div class="agent-chip"><span class="chip-dot" style="background:var(--teal)"></span>Rate Limiter</div>
+            <div class="agent-chip"><span class="chip-dot" style="background:var(--teal)"></span>Result Normalizer</div>
+          </div>
+        </div>
+
+        <div class="arch-layer" style="border-color:rgba(167,139,250,0.25)">
+          <div class="arch-layer-header" style="background:var(--purple-dim); color:var(--purple)">
+            ✅ verifier.py &mdash; Self-Evaluation
+          </div>
+          <div class="arch-layer-body">
+            <div class="agent-chip"><span class="chip-dot" style="background:var(--purple)"></span>Coverage Checker</div>
+            <div class="agent-chip"><span class="chip-dot" style="background:var(--purple)"></span>Gap Identifier</div>
+            <div class="agent-chip"><span class="chip-dot" style="background:var(--purple)"></span>Completeness Score</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout success" style="margin-top:1rem">
+        <span class="callout-icon">🎓</span>
+        <p><strong>Key Learning:</strong> Planning is the hardest part of any agent. You'll see how an agent adjusts its plan when search results are irrelevant, and why Verification prevents premature delivery of incomplete work.</p>
+      </div>
+    </section>
+
+    <hr />
+
+    <!-- ══════════════════ PROJECT 3 ══════════════════ -->
+    <section id="project-3">
+      <div class="section-header">
+        <div class="section-icon" style="background:var(--amber-dim)">🎧</div>
+        <h2>Project 3 &mdash; Customer Support Router</h2>
+      </div>
+      <p>Build an agent that attempts to resolve customer support tickets using a knowledge base, but knows its own limits &mdash; escalating to a human when confidence is low or the action is high-risk. This project explores the <strong>Autonomy Spectrum</strong>.</p>
+
+      <div class="diagram-wrapper" style="margin-top:1.25rem">
+        <div class="mermaid">
+graph TD
+    MSG["💬 Customer Message"] --> PARSE["Intent Parser — LLM"]
+    PARSE --> RETRIEVE["Retrieve from Vector Store"]
+    KB["📚 Knowledge Base"] -->|"Embedded at startup"| VS["ChromaDB"]
+    VS -->|"Top-K docs"| RETRIEVE
+    RETRIEVE --> DECIDE{"Confidence Check"}
+    DECIDE -->|"High confidence + Low risk"| RESOLVE["✅ Execute Resolution"]
+    DECIDE -->|"Low confidence + High risk"| ESCALATE["🚨 Escalate to Human"]
+        </div>
+      </div>
+
+      <h3 style="margin-top:1.5rem">The Autonomy Spectrum</h3>
+      <p>This project specifically demonstrates that autonomy is graduated, not binary:</p>
+      <div class="agent-grid" style="margin-top:0.75rem">
+        <div class="agent-card teal" style="grid-column: 1 / -1">
+          <div class="agent-card-header">
+            <div class="agent-card-icon" style="background:var(--teal-dim)">🟢</div>
+            <div><h3>Agent Handles Autonomously</h3></div>
+          </div>
+          <p>Password resets, FAQ answers, small refunds (&lt;$50). Low risk, high confidence, clear policy match.</p>
+        </div>
+
+        <div class="agent-card amber">
+          <div class="agent-card-header">
+            <div class="agent-card-icon" style="background:var(--amber-dim)">🟡</div>
+            <div><h3>Agent Asks for Approval</h3></div>
+          </div>
+          <p>Medium refunds ($50-$200), account changes. Agent proposes action but waits for human confirmation.</p>
+        </div>
+
+        <div class="agent-card rose">
+          <div class="agent-card-header">
+            <div class="agent-card-icon" style="background:var(--rose-dim)">🔴</div>
+            <div><h3>Agent Escalates to Human</h3></div>
+          </div>
+          <p>Refunds &gt;$200, legal threats, unknown intents, low confidence scores. Full context summary attached.</p>
+        </div>
+      </div>
+
+      <h3 style="margin-top:1.5rem">Component Architecture</h3>
+      <div class="arch-layers" style="margin-top:0.75rem">
+        <div class="arch-layer" style="border-color:rgba(52,211,153,0.25)">
+          <div class="arch-layer-header" style="background:var(--teal-dim); color:var(--teal)">
+            🔍 perception.py &mdash; Intent Classification
+          </div>
+          <div class="arch-layer-body">
+            <div class="agent-chip"><span class="chip-dot" style="background:var(--teal)"></span>Message Parser</div>
+            <div class="agent-chip"><span class="chip-dot" style="background:var(--teal)"></span>Intent Classifier</div>
+            <div class="agent-chip"><span class="chip-dot" style="background:var(--teal)"></span>Sentiment Detector</div>
+            <div class="agent-chip"><span class="chip-dot" style="background:var(--teal)"></span>Entity Extractor</div>
+          </div>
+        </div>
+
+        <div class="arch-layer" style="border-color:rgba(248,113,113,0.25)">
+          <div class="arch-layer-header" style="background:var(--rose-dim); color:var(--rose)">
+            💾 memory.py &mdash; Vector Store (ChromaDB)
+          </div>
+          <div class="arch-layer-body">
+            <div class="agent-chip"><span class="chip-dot" style="background:var(--rose)"></span>Document Chunker</div>
+            <div class="agent-chip"><span class="chip-dot" style="background:var(--rose)"></span>Embedding Index</div>
+            <div class="agent-chip"><span class="chip-dot" style="background:var(--rose)"></span>Retrieval API</div>
+          </div>
+        </div>
+
+        <div class="arch-layer" style="border-color:rgba(96,165,250,0.25)">
+          <div class="arch-layer-header" style="background:var(--blue-dim); color:var(--blue)">
+            🧠 reasoning.py &mdash; Decision Engine
+          </div>
+          <div class="arch-layer-body">
+            <div class="agent-chip"><span class="chip-dot" style="background:var(--blue)"></span>Policy Matcher</div>
+            <div class="agent-chip"><span class="chip-dot" style="background:var(--blue)"></span>Confidence Scorer</div>
+            <div class="agent-chip"><span class="chip-dot" style="background:var(--blue)"></span>Escalation Rules</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout success" style="margin-top:1rem">
+        <span class="callout-icon">🎓</span>
+        <p><strong>Key Learning:</strong> You'll learn to design <strong>escalation logic</strong> that prevents overconfident failures, and understand the critical difference between <strong>semantic memory</strong> (knowledge base) and <strong>episodic memory</strong> (action logs).</p>
+      </div>
+    </section>
+
+    <hr />
+
+    <!-- ══════════════════ PROJECT 4 ══════════════════ -->
+    <section id="project-4">
+      <div class="section-header">
+        <div class="section-icon" style="background:var(--rose-dim)">✈️</div>
+        <h2>Project 4 &mdash; Travel Agency (Multi-Agent)</h2>
+      </div>
+      <p>Build a multi-agent system where two specialized agents &mdash; a Planner and an Accountant &mdash; must negotiate and collaborate to produce a travel itinerary that is both luxurious and budget-friendly.</p>
+
+      <div class="diagram-wrapper" style="margin-top:1.25rem">
+        <div class="mermaid">
+sequenceDiagram
+    participant U as User
+    participant O as Orchestrator
+    participant P as "Planner 🌴"
+    participant A as "Accountant 💰"
+
+    U->>O: "Plan 5 days in Japan, $3000"
+    O->>P: Goal + Budget
+
+    loop Negotiation (max N rounds)
+        P->>P: Search flights, hotels
+        P->>A: Proposed Itinerary
+        A->>A: Calculate costs
+        alt Over Budget
+            A->>P: "Cut hotel or activities"
+        else Within Budget
+            A->>O: "Approved ✅"
+        end
+    end
+
+    O->>U: Final Itinerary + Costs
+        </div>
+      </div>
+
+      <h3 style="margin-top:1.5rem">Agent Architecture</h3>
+      <div class="agent-grid" style="margin-top:0.75rem">
+        <div class="agent-card blue">
+          <div class="agent-card-header">
+            <div class="agent-card-icon" style="background:var(--blue-dim)">🌴</div>
+            <div>
+              <h3>Agent A: The Planner</h3>
+              <code>planner_agent.py</code>
+            </div>
+          </div>
+          <p>Optimistic personality. Creates the most appealing itinerary, then revises when the Accountant pushes back. Tracks rejected options.</p>
+          <div class="routes-to" style="margin-top:0.75rem">Tools →</div>
+          <div style="display:flex; gap:0.375rem; flex-wrap:wrap">
+            <span class="tech-pill">search_flights()</span>
+            <span class="tech-pill">search_hotels()</span>
+            <span class="tech-pill">search_activities()</span>
+          </div>
+        </div>
+
+        <div class="agent-card amber">
+          <div class="agent-card-header">
+            <div class="agent-card-icon" style="background:var(--amber-dim)">💰</div>
+            <div>
+              <h3>Agent B: The Accountant</h3>
+              <code>accountant_agent.py</code>
+            </div>
+          </div>
+          <p>Pragmatic personality. Reviews proposals, identifies cost overruns, suggests specific cuts. Tracks negotiation history and cost trends.</p>
+          <div class="routes-to" style="margin-top:0.75rem">Tools →</div>
+          <div style="display:flex; gap:0.375rem; flex-wrap:wrap">
+            <span class="tech-pill">calculate_total()</span>
+            <span class="tech-pill">compare_alternatives()</span>
+          </div>
+        </div>
+      </div>
+
+      <h3 style="margin-top:1.5rem">Communication Flow</h3>
+      <p>Each agent runs its own Agent Loop, but they communicate through a shared conversation buffer:</p>
+      <div class="mini-flow" style="margin-top:0.75rem">
+        <div class="mini-flow-col">
+          <div class="mini-flow-node active" style="border-color:rgba(96,165,250,0.35); color:var(--blue)">Planner</div>
+          <div class="mini-flow-label">creates itinerary</div>
+        </div>
+        <span class="mini-flow-arrow">→ proposal →</span>
+        <div class="mini-flow-col">
+          <div class="mini-flow-node active" style="border-color:rgba(251,191,36,0.35); color:var(--amber)">Conversation Buffer</div>
+          <div class="mini-flow-label">shared message queue</div>
+        </div>
+        <span class="mini-flow-arrow">→ proposal →</span>
+        <div class="mini-flow-col">
+          <div class="mini-flow-node active" style="border-color:rgba(251,191,36,0.35); color:var(--amber)">Accountant</div>
+          <div class="mini-flow-label">reviews budget</div>
+        </div>
+        <span class="mini-flow-arrow">→ critique →</span>
+        <div class="mini-flow-col">
+          <div class="mini-flow-node active" style="border-color:rgba(251,191,36,0.35); color:var(--amber)">Conversation Buffer</div>
+          <div class="mini-flow-label">shared message queue</div>
+        </div>
+        <span class="mini-flow-arrow">→ critique →</span>
+        <div class="mini-flow-col">
+          <div class="mini-flow-node active" style="border-color:rgba(96,165,250,0.35); color:var(--blue)">Planner</div>
+          <div class="mini-flow-label">revises itinerary</div>
+        </div>
+      </div>
+
+    <hr />
+
+    <!-- ══════════════════ SCENARIO 1 ══════════════════ -->
+    <section id="scenario-1">
+      <div class="section-header">
+        <div class="section-icon" style="background:var(--cyan-dim)">🎧</div>
+        <h2>Scenario 1 &mdash; Customer Support Agent (Claude Agent SDK)</h2>
+      </div>
+      <p>You build an agent to handle <strong>returns, billing disputes, and account issues</strong> using the <strong>Claude Agent SDK</strong>. The agent connects to back-office systems via native Model Context Protocol (MCP) tools: <code>get_customer</code>, <code>lookup_order</code>, <code>process_refund</code>, and <code>escalate_to_human</code>. The operational target is <strong>80%+ first-contact resolution (FCR)</strong> with appropriate, policy-bounded escalation.</p>
+
+      <div class="diagram-wrapper" style="margin-top:1.25rem">
+        <div class="mermaid">
+sequenceDiagram
+    participant U as Customer
+    participant A as Claude Agent SDK Loop
+    participant MCP as MCP Tools Server
+    participant H as Human Tier-2 Agent
+
+    U->>A: "I was double-charged $45 for order #ORD-9821"
+    Note over A: Intent: billing_dispute (Medium risk)
+    A->>MCP: get_customer(customer_id="CUST-104")
+    MCP-->>A: {name: "Jane Doe", tier: "Gold", email: "..."}
+    A->>MCP: lookup_order(order_id="ORD-9821")
+    MCP-->>A: {status: "delivered", charges: [45.00, 45.00], duplicate: true}
+    
+    alt Under Policy Threshold (<$100 & Duplicate Verified)
+        A->>MCP: process_refund(order_id="ORD-9821", amount=45.00, reason="duplicate_charge")
+        MCP-->>A: {status: "success", tx_id: "TX-7781"}
+        A-->>U: "I verified the duplicate charge and refunded $45.00 to your card (Tx #TX-7781). Anything else?"
+        Note over A,U: ✅ First-Contact Resolution (FCR)
+    else Over Threshold or Low Confidence
+        A->>MCP: escalate_to_human(summary="Dispute > limit", priority="high")
+        MCP-->>H: Ticket + full trajectory & MCP context
+        A-->>U: "I've flagged this for our billing specialist. Agent Marcus will take over shortly."
+        Note over A,H: 🚨 Bounded Escalation
+    end
+        </div>
+      </div>
+
+      <!-- Execution Flow Think-Out-Loud Walkthrough -->
+      <h3 style="margin-top:2rem">🧭 Deconstructing the Execution Flow: How to Build &amp; Understand this Sequence Diagram</h3>
+      <p>When you receive a problem statement like <em>"Build an agent to handle returns, billing disputes, and account issues using Claude Agent SDK with MCP tools and 80%+ FCR"</em>, how do you mentally architect this exact execution flow diagram? Here is the exhaustive step-by-step thinking process:</p>
+
+      <div class="state-box" style="margin-top:1rem; flex-direction:column; gap:1.25rem">
+        <!-- Step 1: Identify Actors -->
+        <div>
+          <div class="state-field-name">Step 1: Identify Your 4 Essential System Actors (Participants)</div>
+          <div class="state-field-type">Architecture Boundary Definition</div>
+          <p style="margin-bottom:0.5rem">Every production agent flow requires separating concerns into four discrete boundaries:</p>
+          <ul style="color:var(--text-muted); font-size:0.83rem; line-height:1.7; padding-left:1.25rem">
+            <li><strong>1. The End User (Customer <code>U</code>):</strong> Originator of noisy natural language intents, emotional cues, and potential edge-case ambiguities.</li>
+            <li><strong>2. The Agent Runtime (Claude Agent SDK Loop <code>A</code>):</strong> The reasoning core responsible for intent parsing, planning, tool selection, evaluating policy thresholds, and context management.</li>
+            <li><strong>3. The Tool Environment (MCP Tools Server <code>MCP</code>):</strong> The deterministic bridge to external systems (CRM, ERP, Stripe). The agent cannot touch databases directly; it must speak structured JSON-RPC to this layer.</li>
+            <li><strong>4. The Human Fallback (Tier-2 Specialist <code>H</code>):</strong> The safety net that catches high-risk, ambiguous, or policy-exceeding transactions with zero context loss.</li>
+          </ul>
+        </div>
+
+        <!-- Step 2: Information Dependency Graph -->
+        <div>
+          <div class="state-field-name">Step 2: Trace the Information Dependency Chain (Why this order?)</div>
+          <div class="state-field-type">Perception Ordering &amp; Tool Sequencing</div>
+          <p style="margin-bottom:0.5rem">Why must <code>get_customer</code> precede <code>lookup_order</code>, and why must both precede <code>process_refund</code>?</p>
+          <ul style="color:var(--text-muted); font-size:0.83rem; line-height:1.7; padding-left:1.25rem">
+            <li><strong>Order 1: <code>get_customer()</code> (Identity Verification &amp; Standing):</strong> Before doing anything with an order, the agent must check: Is this customer active? Are there fraud alerts on file? What is their lifetime loyalty tier? Without this, the agent might service an unauthorized or blocked user.</li>
+            <li><strong>Order 2: <code>lookup_order()</code> (Ground Truth Inspection):</strong> The customer claims <em>"I was double-charged $45"</em>. The agent must NEVER take the customer's word as financial truth. It fetches the ledger record to verify: Does the transaction list have two identical $45 timestamps? Is it eligible for automated reversal?</li>
+            <li><strong>Order 3: Decision Gate (Reasoning over Perception):</strong> Only when both customer standing and ledger proof are retrieved does the agent evaluate policy conditions.</li>
+          </ul>
+        </div>
+
+        <!-- Step 3: Branching & Bounded Autonomy -->
+        <div>
+          <div class="state-field-name">Step 3: Model the Branching Logic (The 80/20 Rule: Autonomy vs. Escalation)</div>
+          <div class="state-field-type">Deterministic Policy Gate (alt / else)</div>
+          <p style="margin-bottom:0.5rem">The diagram explicitly shows two mutually exclusive execution paths:</p>
+          <ul style="color:var(--text-muted); font-size:0.83rem; line-height:1.7; padding-left:1.25rem">
+            <li><strong>The Happy Path (80%+ FCR Target):</strong> <code>Amount &le; $100 AND Duplicate Confirmed == True</code> &rarr; Agent autonomously invokes <code>process_refund()</code>, receives transaction hash <code>TX-7781</code>, updates customer, and closes the loop without human friction.</li>
+            <li><strong>The Unhappy / Escalation Path (Safety Guardrail):</strong> <code>Amount &gt; $100 OR Dispute Unverified OR Legal Keywords</code> &rarr; Agent calls <code>escalate_to_human()</code>, passing the full MCP context packet so the human representative starts with complete situational awareness.</li>
+          </ul>
+        </div>
+
+        <!-- Step 4: What this teaches about  Framework -->
+        <div>
+          <div class="state-field-name">Step 4: Mapping the Diagram back to  Core Agent Properties</div>
+          <div class="state-field-type">Conceptual Synthesis</div>
+          <ul style="color:var(--text-muted); font-size:0.83rem; line-height:1.7; padding-left:1.25rem">
+            <li><strong>Perception:</strong> Ingesting customer text + fetching CRM/Order state via MCP tools.</li>
+            <li><strong>Reasoning:</strong> Classifying intent (<code>billing_dispute</code>) and evaluating threshold rules.</li>
+            <li><strong>Action:</strong> Executing <code>process_refund()</code> with side-effects on Stripe/Ledger.</li>
+            <li><strong>Memory &amp; Social Ability:</strong> Handoff ticket packaging for human collaboration and context retention across turns.</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3 style="margin-top:2rem">MCP Tools &amp; Integration Architecture</h3>
+      <div class="agent-grid" style="margin-top:0.75rem">
+        <div class="agent-card cyan">
+          <div class="agent-card-header">
+            <div class="agent-card-icon" style="background:var(--cyan-dim)">👤</div>
+            <div>
+              <h3>get_customer</h3>
+              <code>mcp::crm::get_customer</code>
+            </div>
+          </div>
+          <p>Retrieves customer profile, lifetime value, loyalty tier, account standing, and contact verification status.</p>
+        </div>
+
+        <div class="agent-card blue">
+          <div class="agent-card-header">
+            <div class="agent-card-icon" style="background:var(--blue-dim)">📦</div>
+            <div>
+              <h3>lookup_order</h3>
+              <code>mcp::orders::lookup_order</code>
+            </div>
+          </div>
+          <p>Queries order history, shipping status, tracking numbers, line items, and transaction timestamps.</p>
+        </div>
+
+        <div class="agent-card teal">
+          <div class="agent-card-header">
+            <div class="agent-card-icon" style="background:var(--teal-dim)">💳</div>
+            <div>
+              <h3>process_refund</h3>
+              <code>mcp::billing::process_refund</code>
+            </div>
+          </div>
+          <p>Executes automated payment reversals for verified returns or billing errors subject to strict policy limits ($0&ndash;$100).</p>
+        </div>
+
+        <div class="agent-card rose">
+          <div class="agent-card-header">
+            <div class="agent-card-icon" style="background:var(--rose-dim)">🚨</div>
+            <div>
+              <h3>escalate_to_human</h3>
+              <code>mcp::support::escalate_to_human</code>
+            </div>
+          </div>
+          <p>Transfers the conversation, conversation transcript, order state, and confidence scores to a human specialist.</p>
+        </div>
+      </div>
+
+      <h3 style="margin-top:1.5rem">Key Target Metrics & Policy Guardrails</h3>
+      <div class="state-box" style="margin-top:0.75rem">
+        <div class="state-field">
+          <div class="state-field-name">Target Metric: 80%+ FCR</div>
+          <div class="state-field-type">First-Contact Resolution</div>
+          <p>Automate end-to-end resolution for standard returns (within 30 days) and verified billing glitches without human handoff.</p>
+        </div>
+        <div class="state-field">
+          <div class="state-field-name">Escalation Guardrails</div>
+          <div class="state-field-type">Policy Limits</div>
+          <p>Refunds &gt;$100, legal/chargeback threats, repeated sentiment decay, or ambiguous account ownership escalate immediately.</p>
+        </div>
+      </div>
+
+      <h3 style="margin-top:2rem">🧠 Thinking Out Loud: Comprehensive PM &amp; Architect Brainstorming Walkthrough</h3>
+      <p>Here is the real-time, exhaustive breakdown of how an AI Product Manager and Lead Agent Architect brainstorm, debate trade-offs, and engineer this customer support agent from first principles:</p>
+
+      <div class="flow-steps" style="margin-top:1.25rem">
+        <!-- Phase 1 -->
+        <div class="flow-step">
+          <div class="flow-step-left">
+            <div class="step-number" style="background:var(--cyan-dim); border-color:rgba(34,211,238,0.3); color:var(--cyan)">1</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="flow-step-content">
+            <h3>Phase 1: "What are we really solving, and what are the existential risks?"</h3>
+            <div class="callout info" style="margin:0.5rem 0">
+              <span class="callout-icon">💭</span>
+              <p><strong>PM &amp; Architect Brainstorming:</strong><br />
+              <em>"Leadership gave us a clear mandate: <strong>'Achieve 80%+ First-Contact Resolution (FCR) on Tier-1 customer queries'</strong> (returns, billing disputes, account updates). But let's pause and dissect what that actually requires. If we simply connect an LLM to customer chat, users will socially engineer it ('My grandmother needs insulin, please refund $500 immediately'). If the agent blindly grants refunds, we solve FCR but bleed millions in revenue.<br /><br />
+              On the other hand, if we make the agent too conservative, it will say 'I cannot help, let me transfer you' to 50% of customers, crashing our FCR to 40% and frustrating users. The real architectural challenge is building <strong>calibrated confidence</strong>: 100% autonomous resolution when backed by objective backend proof, but deterministic, zero-friction handoffs the moment risk exceeds our defined appetite."</em></p>
+            </div>
+            <p><strong>Formalizing Objectives, Constraints &amp; Guardrails:</strong></p>
+            <ul style="color:var(--text-muted); font-size:0.85rem; line-height:1.7; padding-left:1.25rem">
+              <li><strong>North Star Metric:</strong> &ge; 80% FCR across eligible Tier-1 inquiries (measured as closed tickets with no reopening within 72 hours).</li>
+              <li><strong>Secondary Guardrail Metric:</strong> CSAT &ge; 4.5/5 on resolved cases; Median resolution time &lt; 90 seconds.</li>
+              <li><strong>Hard Constraint (Zero-Tolerance):</strong> Zero unauthorized financial operations ($0.00). No refund may ever execute without matching an immutable ledger order record.</li>
+              <li><strong>Context Grounding:</strong> The LLM is forbidden from stating order or refund statuses from its parametric memory. It must cite verifiable MCP tool outputs.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Phase 2 -->
+        <div class="flow-step">
+          <div class="flow-step-left">
+            <div class="step-number" style="background:var(--blue-dim); border-color:rgba(96,165,250,0.3); color:var(--blue)">2</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="flow-step-content">
+            <h3>Phase 2: "Deconstructing Perception &amp; Action Tools (Why MCP?)"</h3>
+            <div class="callout info" style="margin:0.5rem 0">
+              <span class="callout-icon">💭</span>
+              <p><strong>Architectural Debate:</strong><br />
+              <em>"How should the agent interact with our backend? We have 12 internal microservices: CRM, Shopify, Stripe, Zendesk, Shipping Carrier APIs, Inventory DB, etc. If we write 15 custom function tools directly into the prompt, the agent gets confused, hallucinates tool parameters, and wastes 3,000 tokens per turn just reading schema definitions.<br /><br />
+              Instead, we will use the <strong>Model Context Protocol (MCP)</strong>. MCP lets us expose clean, aggregated, semantic server tools over standard JSON-RPC. We boil down all 12 services into <strong>4 purpose-built tools</strong> with strictly validated Pydantic/JSON schemas."</em></p>
+            </div>
+            
+            <div class="mini-flow" style="margin:0.5rem 0">
+              <div class="mini-flow-col">
+                <div class="mini-flow-node active" style="border-color:rgba(34,211,238,0.35); color:var(--cyan)">1. Identity &amp; Standing</div>
+                <div class="mini-flow-label">get_customer(id/email)</div>
+              </div>
+              <span class="mini-flow-arrow">&rarr;</span>
+              <div class="mini-flow-col">
+                <div class="mini-flow-node active" style="border-color:rgba(96,165,250,0.35); color:var(--blue)">2. Transaction Ground Truth</div>
+                <div class="mini-flow-label">lookup_order(order_id)</div>
+              </div>
+              <span class="mini-flow-arrow">&rarr;</span>
+              <div class="mini-flow-col">
+                <div class="mini-flow-node active" style="border-color:rgba(52,211,153,0.35); color:var(--teal)">3. Controlled Action</div>
+                <div class="mini-flow-label">process_refund(id, amt)</div>
+              </div>
+              <span class="mini-flow-arrow">&rarr;</span>
+              <div class="mini-flow-col">
+                <div class="mini-flow-node active" style="border-color:rgba(248,113,113,0.35); color:var(--rose)">4. Safety Valve</div>
+                <div class="mini-flow-label">escalate_to_human()</div>
+              </div>
+            </div>
+
+            <p style="margin-top:0.75rem"><strong>Tool Contracts &amp; Data Schema Brainstorm:</strong></p>
+            <ul style="color:var(--text-muted); font-size:0.85rem; line-height:1.7; padding-left:1.25rem">
+              <li><code>get_customer(customer_id: str)</code> &rarr; Returns verified customer tier, lifetime spend, return history (% of orders returned), and open dispute flags.</li>
+              <li><code>lookup_order(order_id: str)</code> &rarr; Returns shipping timestamp, item SKU, return eligibility boolean (delivery date &le; 30 days), and charge ledger entries.</li>
+              <li><code>process_refund(order_id: str, amount: float, reason: str)</code> &rarr; Requires reason enum (<code>duplicate_charge</code>, <code>return_in_transit</code>, <code>damaged_item</code>). Returns bank transaction ID.</li>
+              <li><code>escalate_to_human(summary: str, priority: str, extracted_entities: dict)</code> &rarr; Packages the structured context into a CRM ticket for Tier-2 agents.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Phase 3 -->
+        <div class="flow-step">
+          <div class="flow-step-left">
+            <div class="step-number" style="background:var(--amber-dim); border-color:rgba(251,191,36,0.3); color:var(--amber)">3</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="flow-step-content">
+            <h3>Phase 3: "Designing the Decision Tree &amp; Autonomy Boundaries"</h3>
+            <div class="callout info" style="margin:0.5rem 0">
+              <span class="callout-icon">💭</span>
+              <p><strong>PM &amp; Architect Brainstorming:</strong><br />
+              <em>"We cannot treat all customer requests equally.  framework tells us that <strong>Autonomy is a graduated spectrum</strong>. Where do we place the slider for each intent?<br /><br />
+              - <strong>Returns (&lt; 30 days):</strong> 100% Autonomous. The math is simple, risk is low, label generation is automated.<br />
+              - <strong>Billing Disputes:</strong> Graduated by dollar value and ledger verification. If ledger shows 2 identical charges for the same order, it's a proven glitch &mdash; refund automatically up to $100. If it's $150, propose the refund and require user confirmation. If &gt;$200, escalate to human.<br />
+              - <strong>Account Lockouts / High Sentiment Escalations:</strong> Low autonomy. Verify 2FA first; escalate immediately if user threatens legal action or chargebacks."</em></p>
+            </div>
+
+            <div class="agent-grid" style="margin-top:0.75rem">
+              <div class="agent-card teal" style="padding:1rem">
+                <h4 style="font-size:0.85rem; color:var(--teal); margin-bottom:0.35rem">🟢 Tier 1: Fully Autonomous (80% Target Core)</h4>
+                <p style="font-size:0.78rem; margin-bottom:0.35rem"><strong>Condition:</strong> Policy matches 100%, return window &le; 30d, verified duplicate charges &le; $100, or order tracking queries.</p>
+                <p style="font-size:0.75rem; color:var(--text-dim); margin:0"><em>Action:</em> Executes tool immediately and delivers confirmation.</p>
+              </div>
+
+              <div class="agent-card amber" style="padding:1rem">
+                <h4 style="font-size:0.85rem; color:var(--amber); margin-bottom:0.35rem">🟡 Tier 2: Propose &amp; Confirm (Human-in-the-Loop User)</h4>
+                <p style="font-size:0.78rem; margin-bottom:0.35rem"><strong>Condition:</strong> Partial refund offers, store-credit alternatives (bonus 10%), refunds between $100&ndash;$200.</p>
+                <p style="font-size:0.75rem; color:var(--text-dim); margin:0"><em>Action:</em> Explains policy, proposes exact dollar calculation, asks customer to click/type "Confirm".</p>
+              </div>
+
+              <div class="agent-card rose" style="padding:1rem; grid-column:1 / -1">
+                <h4 style="font-size:0.85rem; color:var(--rose); margin-bottom:0.35rem">🔴 Tier 3: Deterministic Escalation (Safety Guardrail)</h4>
+                <p style="font-size:0.78rem; margin-bottom:0.35rem"><strong>Condition:</strong> Refund &gt; $200, multiple disputed charges on account within 60 days (abuse flag), negative sentiment &gt; 3 consecutive turns, or legal/regulatory keywords.</p>
+                <p style="font-size:0.75rem; color:var(--text-dim); margin:0"><em>Action:</em> Calls <code>escalate_to_human()</code>, injects condensed customer history &amp; order IDs into ticket, politely hands off.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Phase 4 -->
+        <div class="flow-step">
+          <div class="flow-step-left">
+            <div class="step-number" style="background:var(--purple-dim); border-color:rgba(167,139,250,0.3); color:var(--purple)">4</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="flow-step-content">
+            <h3>Phase 4: "Why the Claude Agent SDK is the optimal implementation choice"</h3>
+            <div class="callout info" style="margin:0.5rem 0">
+              <span class="callout-icon">💭</span>
+              <p><strong>Technical Rationale:</strong><br />
+              <em>"Why use the <strong>Claude Agent SDK</strong> over building a custom LangChain/LangGraph agent or raw API loop? In customer support, conversations are messy. Customers ramble, paste irrelevant tracking emails, and ask multiple questions in one breath. The Claude Agent SDK provides three architectural building blocks out of the box:"</em></p>
+            </div>
+            <ul style="color:var(--text-muted); font-size:0.85rem; line-height:1.7; padding-left:1.25rem">
+              <li><strong>1. Built-in Agent Loop (Think-Act-Observe):</strong> Automatically executes tool calls, parses responses, handles network timeouts, and recurses until the user's issue is resolved without brittle while-loops.</li>
+              <li><strong>2. Native Model Context Protocol (MCP) Integration:</strong> The SDK connects to in-process and stdio MCP servers natively. No custom JSON parsing or middleware glue code required.</li>
+              <li><strong>3. Context Compaction &amp; Window Management:</strong> In long diagnostic chats (10+ turns), the SDK automatically summarizes older banter while pinning critical metadata (Customer ID, Order #, Ledger records) in active context.</li>
+              <li><strong>4. Lifecycle Hooks for Hard Guardrails:</strong> We can register a pre-tool hook:
+                <div class="code-plain" style="margin:0.4rem 0">
+                  <pre><span class="kw">async def</span> <span class="fn">before_tool_execution</span>(tool_name: <span class="cl">str</span>, args: <span class="cl">dict</span>):
+    <span class="kw">if</span> tool_name == <span class="st">"process_refund"</span> <span class="kw">and</span> args.<span class="fn">get</span>(<span class="st">"amount"</span>, <span class="nb">0</span>) > <span class="nb">100.0</span>:
+        <span class="kw">raise</span> <span class="cl">PolicyViolationError</span>(<span class="st">"Refund > $100 requires human escalation."</span>)</pre>
+                </div>
+                This means even if the LLM hallucinated a $500 refund, the SDK interceptor blocks the network call before it ever touches Stripe.
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Phase 5 -->
+        <div class="flow-step">
+          <div class="flow-step-left">
+            <div class="step-number" style="background:var(--teal-dim); border-color:rgba(52,211,153,0.3); color:var(--teal)">5</div>
+          </div>
+          <div class="flow-step-content" style="padding-bottom:0">
+            <h3>Phase 5: "Evaluation, Phased Rollout &amp; Continuous Telemetry"</h3>
+            <div class="callout info" style="margin:0.5rem 0">
+              <span class="callout-icon">💭</span>
+              <p><strong>Go-to-Market Strategy:</strong><br />
+              <em>"We will never deploy an autonomous customer-facing agent on Day 1 directly to live chat. That is how PR disasters happen. We will execute a 3-stage rollout strategy with explicit gating criteria:"</em></p>
+            </div>
+            
+            <div class="flow-steps" style="margin-top:0.75rem">
+              <div class="flow-step">
+                <div class="flow-step-left">
+                  <div class="step-number" style="width:28px; height:28px; font-size:0.75rem; background:var(--surface-3)">A</div>
+                  <div class="step-line" style="min-height:1rem"></div>
+                </div>
+                <div class="flow-step-content" style="padding-bottom:1rem">
+                  <h4 style="font-size:0.85rem">Stage 1: Offline Evaluation against Golden Dataset (500 Historical Tickets)</h4>
+                  <p style="font-size:0.78rem">Run the agent against 500 labeled historical tickets spanning returns, duplicate charges, lost packages, and abusive inquiries. Gate to next stage: &ge; 85% accuracy on tool call parameters and 0 policy violations.</p>
+                </div>
+              </div>
+
+              <div class="flow-step">
+                <div class="flow-step-left">
+                  <div class="step-number" style="width:28px; height:28px; font-size:0.75rem; background:var(--surface-3)">B</div>
+                  <div class="step-line" style="min-height:1rem"></div>
+                </div>
+                <div class="flow-step-content" style="padding-bottom:1rem">
+                  <h4 style="font-size:0.85rem">Stage 2: Copilot / Shadow Mode (Human-in-the-Loop Validation)</h4>
+                  <p style="font-size:0.78rem">Agent generates draft replies and proposed MCP tool calls in human support agents' internal Zendesk dashboard. Human reps review and 1-click approve. Gate: 90%+ rep approval rate over 2 weeks.</p>
+                </div>
+              </div>
+
+              <div class="flow-step">
+                <div class="flow-step-left">
+                  <div class="step-number" style="width:28px; height:28px; font-size:0.75rem; background:var(--surface-3)">C</div>
+                </div>
+                <div class="flow-step-content" style="padding-bottom:0">
+                  <h4 style="font-size:0.85rem">Stage 3: Phased Live Rollout (Tier-1 Autonomous)</h4>
+                  <p style="font-size:0.78rem">Route 10% &rarr; 25% &rarr; 50% &rarr; 100% of live Tier-1 chat volume to the autonomous agent, maintaining real-time telemetry on escalation rates and CSAT.</p>
+                </div>
+              </div>
+            </div>
+
+            <table class="concept-table" style="margin-top:1rem">
+              <thead>
+                <tr><th>KPI Metric</th><th>Target SLA</th><th>Monitoring &amp; Failure Mode Mitigation</th></tr>
+              </thead>
+              <tbody>
+                <tr><td class="label">First-Contact Resolution (FCR)</td><td>&ge; 80%</td><td>Track re-opened tickets; fine-tune tool descriptions if resolution stalls</td></tr>
+                <tr><td class="label">Unauthorized Financial Drift</td><td>0.00% ($0.00)</td><td>SDK lifecycle pre-execution hooks block unauthorized refunds deterministically</td></tr>
+                <tr><td class="label">Escalation Packet Quality</td><td>100%</td><td>Handoff must contain structured JSON summary + verified customer intent</td></tr>
+                <tr><td class="label">Customer CSAT</td><td>&ge; 4.5 / 5.0</td><td>Automated post-chat 1-question survey on agent helpfulness</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout tip" style="margin-top:1.5rem">
+        <span class="callout-icon">💡</span>
+        <p><strong>Core Architectural Philosophy:</strong> High-performing autonomous agents succeed not because the prompt is poetic, but because the <strong>system boundaries are unbreachable</strong>: clean MCP tool abstractions, explicit graduated autonomy gates, and SDK-level lifecycle interceptors that enforce safety before side effects occur.</p>
+      </div>
+    </section>
+
+    <hr />
+
+    <!-- ══════════════════ LEARNING PROGRESSION ══════════════════ -->
+    <section id="progression">
+      <div class="section-header">
+        <div class="section-icon" style="background:var(--purple-dim)">📐</div>
+        <h2>Learning Progression</h2>
+      </div>
+      <p>Each project builds on concepts from the previous one. This is the recommended order:</p>
+
+      <div class="diagram-wrapper" style="margin-top:1.25rem">
+        <div class="mermaid">
+graph LR
+    P1["📈 Project 1\nStock Monitor"] -->|"Teaches Agent Loop"| P2["🔬 Project 2\nDeep Researcher"]
+    P2 -->|"Adds Planning + Lifecycle"| P3["🎧 Project 3\nSupport Router"]
+    P3 -->|"Adds Autonomy + Vectors"| P4["✈️ Project 4\nTravel Agency"]
+
+    style P1 fill:#1a3a2a,stroke:#34d399,color:#34d399
+    style P2 fill:#1a2a3a,stroke:#60a5fa,color:#60a5fa
+    style P3 fill:#2a2a1a,stroke:#fbbf24,color:#fbbf24
+    style P4 fill:#2a1a1a,stroke:#f87171,color:#f87171
+        </div>
+      </div>
+
+      <table class="concept-table" style="margin-top:1.25rem">
+        <thead>
+          <tr><th>Project</th><th>Primary Focus</th><th>New Concept Introduced</th><th>Complexity</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="label">1 &mdash; Stock Monitor</td><td>Reactivity, Perception</td><td>Agent Loop, Episodic Memory, Dedup</td><td>⭐</td></tr>
+          <tr><td class="label">2 &mdash; Deep Researcher</td><td>Proactivity, Lifecycle</td><td>Goal Decomposition, Verification, Re-planning</td><td>⭐⭐</td></tr>
+          <tr><td class="label">3 &mdash; Support Router</td><td>Autonomy Spectrum</td><td>Vector Stores, Escalation Logic, Confidence Scoring</td><td>⭐⭐⭐</td></tr>
+          <tr><td class="label">4 &mdash; Travel Agency</td><td>Social Ability</td><td>Multi-Agent Communication, Negotiation, Convergence</td><td>⭐⭐⭐⭐</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <hr />
+
+    <!-- ══════════════════ FAILURE MODES ══════════════════ -->
+    <section id="failure-modes">
+      <div class="section-header">
+        <div class="section-icon" style="background:var(--rose-dim)">🚨</div>
+        <h2>Common Failure Modes</h2>
+      </div>
+      <p>Williams emphasizes that failures trace to component breakdowns. These are the patterns to watch for:</p>
+
+      <table class="concept-table" style="margin-top:1rem">
+        <thead>
+          <tr><th>Failure</th><th>Component</th><th>Description</th><th>Discovered In</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="label">Infinite Alert Loop</td><td>Perception + Memory</td><td>Agent keeps alerting on the same event because memory doesn't track "already seen"</td><td>Project 1</td></tr>
+          <tr><td class="label">Hallucinated Tool Call</td><td>Reasoning</td><td>Agent invents a tool name that doesn't exist, causing an execution crash</td><td>Project 2</td></tr>
+          <tr><td class="label">Plan Decomposition Failure</td><td>Reasoning</td><td>Agent creates a plan with steps it cannot actually execute with available tools</td><td>Project 2</td></tr>
+          <tr><td class="label">Stale Context</td><td>Memory</td><td>Agent uses outdated information from an old conversation or cached result</td><td>Project 3</td></tr>
+          <tr><td class="label">Overconfident Autonomy</td><td>Action</td><td>Agent takes a high-risk action without verification or escalation</td><td>Project 3</td></tr>
+          <tr><td class="label">Negotiation Deadlock</td><td>Social Ability</td><td>Two agents can't agree and loop forever without convergence criteria</td><td>Project 4</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout danger" style="margin-top:1rem">
+        <span class="callout-icon">🔥</span>
+        <p><strong>Rule of Thumb:</strong> When an agent misbehaves, debug from the <em>outside in</em>: check Perception first (is it seeing the right data?), then Memory (is it retrieving the right context?), then Reasoning (is it making the right decision?), then Action (is it executing correctly?). The model is almost never the problem.</p>
+      </div>
+    </section>
+
+    <hr />
+
+    <!-- ══════════════════ STATUS DASHBOARD ══════════════════ -->
+    <section id="status">
+      <div class="section-header">
+        <div class="section-icon" style="background:var(--surface-3)">📊</div>
+        <h2>Implementation Status</h2>
+      </div>
+
+      <div class="status-grid">
+        <div class="status-card" style="border-top: 2px solid var(--teal)">
+          <div class="status-emoji">📈</div>
+          <div class="status-label">Stock Monitor</div>
+          <div class="status-state" style="color: var(--teal)">✅ complete</div>
+        </div>
+        <div class="status-card" style="border-top: 2px solid var(--blue)">
+          <div class="status-emoji">🔬</div>
+          <div class="status-label">Deep Researcher</div>
+          <div class="status-state" style="color: var(--blue)">✅ complete</div>
+        </div>
+        <div class="status-card" style="border-top: 2px solid var(--amber)">
+          <div class="status-emoji">🎧</div>
+          <div class="status-label">Support Router</div>
+          <div class="status-state" style="color: var(--amber)">✅ complete</div>
+        </div>
+        <div class="status-card" style="border-top: 2px solid var(--rose)">
+          <div class="status-emoji">✈️</div>
+          <div class="status-label">Travel Agency</div>
+          <div class="status-state" style="color: var(--rose)">✅ complete</div>
+        </div>
+      </div>
+
+      <div class="callout info" style="margin-top:1.25rem">
+        <span class="callout-icon">📝</span>
+        <p>This documentation will be updated as each project progresses through implementation. Code walkthroughs, implementation details, and discovered insights will be added to each project section.</p>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+  const sections = document.querySelectorAll('section, .hero');
+  const navLinks = document.querySelectorAll('.nav-link');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(link => link.classList.remove('active'));
+        const id = entry.target.id;
+        const active = document.querySelector(`.nav-link[href="#${id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-30% 0px -60% 0px' });
+
+  sections.forEach(s => s.id && observer.observe(s));
+
+  // ── Sidebar Toggle Functionality ──
+  const layout = document.getElementById('layoutContainer');
+  const toggleBtn = document.getElementById('sidebarToggle');
+  const closeBtn = document.getElementById('sidebarCloseBtn');
+
+  function toggleSidebar() {
+    const isCollapsed = layout.classList.toggle('sidebar-collapsed');
+    localStorage.setItem('sidebar_collapsed', isCollapsed ? 'true' : 'false');
+  }
+
+  // Restore saved state
+  if (localStorage.getItem('sidebar_collapsed') === 'true') {
+    layout.classList.add('sidebar-collapsed');
+  }
+
+  if (toggleBtn) toggleBtn.addEventListener('click', toggleSidebar);
+  if (closeBtn) closeBtn.addEventListener('click', toggleSidebar);
+
+  // Keyboard shortcut: Press '[' to toggle sidebar
+  document.addEventListener('keydown', (e) => {
+    if (e.key === '[' && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
+      toggleSidebar();
+    }
+  });
+</script>
+
+</body>
+</html>
