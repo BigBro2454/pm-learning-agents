@@ -118,6 +118,26 @@ def run_project(project_key: str, extra_args=None):
         print(f"\n❌ Project execution exited with code {e.returncode}")
 
 
+def run_benchmarks(mock: bool = True, iterations: int = 3, export_dir: str = None):
+    """Execute cross-archetype performance, token, and cost benchmark suite."""
+    from benchmarks.archetype_benchmarker import ArchetypeBenchmarker
+    mode = "mock" if mock else "live"
+    print(f"\n⚡ Initializing Cross-Archetype Benchmark Harness (Mode: {mode.upper()})...")
+    benchmarker = ArchetypeBenchmarker(mode=mode)
+    report = benchmarker.run_all(iterations=iterations)
+    benchmarker.print_cli_summary(report)
+
+    if export_dir:
+        os.makedirs(export_dir, exist_ok=True)
+        json_path = os.path.join(export_dir, "benchmark_summary.json")
+        md_path = os.path.join(export_dir, "benchmark_summary.md")
+        benchmarker.export_json(report, json_path)
+        benchmarker.export_markdown(report, md_path)
+        print(f"📁 Benchmark reports successfully exported to:")
+        print(f"   JSON:     {json_path}")
+        print(f"   Markdown: {md_path}\n")
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Applied AI Agent Architecture Lab CLI - Google Gemini & Williams' Framework"
@@ -137,6 +157,34 @@ def main():
         action="store_true",
         help="Run unit test suite validating schemas and message buffers"
     )
+    parser.add_argument(
+        "--benchmark", "-b",
+        action="store_true",
+        help="Execute cross-archetype token, cost, and latency comparative benchmark suite"
+    )
+    parser.add_argument(
+        "--mock",
+        action="store_true",
+        default=True,
+        help="Run benchmark in deterministic offline mock mode (default: True)"
+    )
+    parser.add_argument(
+        "--live",
+        action="store_true",
+        help="Run benchmark against live Google Gemini 2.5 Flash API"
+    )
+    parser.add_argument(
+        "--iterations", "-i",
+        type=int,
+        default=3,
+        help="Number of iterations per archetype (default: 3)"
+    )
+    parser.add_argument(
+        "--export-dir",
+        type=str,
+        default=None,
+        help="Directory path to export benchmark JSON and Markdown scorecards"
+    )
 
     args, unknown = parser.parse_known_args()
 
@@ -148,6 +196,11 @@ def main():
         run_tests()
         return
 
+    if args.benchmark:
+        is_mock = not args.live
+        run_benchmarks(mock=is_mock, iterations=args.iterations, export_dir=args.export_dir)
+        return
+
     if args.project:
         run_project(args.project, unknown)
     else:
@@ -157,8 +210,10 @@ def main():
         print("  python run_lab.py --project 2              # Run Deep Researcher")
         print("  python run_lab.py --project 3              # Run Support Router")
         print("  python run_lab.py --project 4              # Run Travel Agency")
+        print("  python run_lab.py --benchmark              # Run cross-archetype benchmark")
         print("  python run_lab.py --test                   # Run automated tests\n")
 
 
 if __name__ == "__main__":
     main()
+

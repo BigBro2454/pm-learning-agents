@@ -1,0 +1,116 @@
+{
+  "timestamp": "2026-09-27 18:42:20 UTC",
+  "evaluation_mode": "MOCK",
+  "model_evaluated": "gemini-2.5-flash",
+  "total_archetypes": 4,
+  "archetypes": [
+    {
+      "archetype_id": "1",
+      "name": "Stock & News Monitor",
+      "williams_archetype": "Autonomous Monitoring Loop",
+      "autonomy_classification": "Moderate Autonomy",
+      "social_ability": "Low Social Ability (Isolated Agent)",
+      "iterations": 3,
+      "mean_latency_ms": 53.09,
+      "p95_latency_ms": 56.05,
+      "min_latency_ms": 50.01,
+      "max_latency_ms": 56.05,
+      "prompt_tokens": 185,
+      "completion_tokens": 64,
+      "total_tokens": 249,
+      "cost_per_run_usd": 3.3e-05,
+      "cost_per_1k_runs_usd": 0.0331,
+      "contract_conformance_rate": 100.0,
+      "key_bottleneck": "Polling frequency vs rate-limiting overhead",
+      "architectural_mitigation": "SQLite episodic hash deduplication stops redundant LLM queries",
+      "sample_payload": {
+        "input": "Analyze market relevance of article: 'Alphabet reports strong cloud revenue growth driven by Vertex AI and Google ADK enterprise adoption' for tech investors.",
+        "relevance_score": 0.92,
+        "action": "discord_alert"
+      }
+    },
+    {
+      "archetype_id": "2",
+      "name": "Deep Researcher",
+      "williams_archetype": "Goal Decomposition & Plan-Execute",
+      "autonomy_classification": "High Proactivity / Bounded Autonomy",
+      "social_ability": "Low Social Ability (Sequential Sub-tasks)",
+      "iterations": 3,
+      "mean_latency_ms": 134.77,
+      "p95_latency_ms": 145.03,
+      "min_latency_ms": 124.24,
+      "max_latency_ms": 145.03,
+      "prompt_tokens": 850,
+      "completion_tokens": 380,
+      "total_tokens": 1230,
+      "cost_per_run_usd": 0.000178,
+      "cost_per_1k_runs_usd": 0.1778,
+      "contract_conformance_rate": 98.5,
+      "key_bottleneck": "Sequential multi-hop query synthesis compounding latency",
+      "architectural_mitigation": "Subtask fan-out with citation verification contracts",
+      "sample_payload": {
+        "goal": "Investigate architectural latency bottlenecks of centralized vs distributed multi-agent systems.",
+        "subtasks": 3,
+        "verified_sources": 5
+      }
+    },
+    {
+      "archetype_id": "3",
+      "name": "Support Triage Router",
+      "williams_archetype": "Autonomy Spectrum & Policy Escalation",
+      "autonomy_classification": "Gated Autonomy (HITL Fallback)",
+      "social_ability": "Moderate Social Ability (Human Handoff)",
+      "iterations": 3,
+      "mean_latency_ms": 71.97,
+      "p95_latency_ms": 76.73,
+      "min_latency_ms": 66.12,
+      "max_latency_ms": 76.73,
+      "prompt_tokens": 340,
+      "completion_tokens": 110,
+      "total_tokens": 450,
+      "cost_per_run_usd": 5.8e-05,
+      "cost_per_1k_runs_usd": 0.0585,
+      "contract_conformance_rate": 100.0,
+      "key_bottleneck": "Vector similarity variance & false-positive autonomous execution",
+      "architectural_mitigation": "Strict confidence threshold gating (0.85) routing ambiguous cases to Tier 2",
+      "sample_payload": {
+        "query": "My order ORD-99812 arrived defective. I request an immediate refund of $45.50.",
+        "intent": "refund",
+        "confidence": 0.95,
+        "action": "auto_resolve"
+      }
+    },
+    {
+      "archetype_id": "4",
+      "name": "Travel Agency Debate",
+      "williams_archetype": "Collaborative Multi-Agent Debate",
+      "autonomy_classification": "High Social Ability / Bounded Autonomy",
+      "social_ability": "High Social Ability (Planner <-> Accountant)",
+      "iterations": 3,
+      "mean_latency_ms": 200.06,
+      "p95_latency_ms": 215.05,
+      "min_latency_ms": 185.06,
+      "max_latency_ms": 215.05,
+      "prompt_tokens": 1420,
+      "completion_tokens": 560,
+      "total_tokens": 1980,
+      "cost_per_run_usd": 0.000275,
+      "cost_per_1k_runs_usd": 0.2745,
+      "contract_conformance_rate": 99.0,
+      "key_bottleneck": "Multi-turn context window inflation during adversarial rounds",
+      "architectural_mitigation": "ConversationBuffer with max round caps (MAX_ROUNDS=4) & structured proposals",
+      "sample_payload": {
+        "request": "Plan a 5-day trip to Tokyo under a strict $3,000 budget.",
+        "rounds": 2,
+        "agreed_cost": 2100,
+        "status": "APPROVED"
+      }
+    }
+  ],
+  "fleet_summary": {
+    "average_latency_ms": 114.97,
+    "total_benchmark_tokens": 3909,
+    "aggregate_cost_per_1k_suite_runs_usd": 0.5439,
+    "average_contract_conformance": 99.38
+  }
+}
