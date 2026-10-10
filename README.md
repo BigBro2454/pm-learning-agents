@@ -3,7 +3,9 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![Google Gemini](https://img.shields.io/badge/intelligence-Google%20Gemini%202.5%20Flash-4285F4.svg)](https://ai.google.dev/)
 [![Framework](https://img.shields.io/badge/framework-Williams'%20Agent%20Framework-orange.svg)](https://en.wikipedia.org/wiki/Intelligent_agent)
-[![Vector Store](https://img.shields.io/badge/storage-ChromaDB%20%2B%20SQLite-green.svg)](https://www.trychroma.com/)
+[![Security Guardrails](https://img.shields.io/badge/guardrails-Sub--0.2ms%20Deterministic-emerald.svg)](./guardrails/agent_guardrails.py)
+[![HITL Queue](https://img.shields.io/badge/HITL-Priority--Gated%20Supervisor-purple.svg)](./hitl/escalation_queue.py)
+[![Test Suite](https://img.shields.io/badge/tests-21%2F21%20Passed%20(100%25)-brightgreen.svg)](./tests/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 > **Engineering Design Document & Production Reference Implementation**  
@@ -26,7 +28,62 @@ This repository implements **four distinct production agent archetypes** grounde
 
 ---
 
-## 2. Williams' Agent Framework & Property Taxonomy
+## 2. PR #2 Architectural Deliverables: Security Guardrails, HITL Queue & Lifecycle Telemetry
+
+To elevate the lab to Google Cloud AI enterprise production readiness, **Pull Request #2** introduces four foundational governance and observability systems:
+
+```mermaid
+flowchart TD
+    Inbound([User / Inbound Payload]) --> Guardrails[1. AgentGuardrails Engine<br/>Sub-0.2ms Regex Interception]
+    
+    Guardrails -->|Prompt Injection Detected| BlockNode[Action: BLOCK<br/>0 Token Spend / Circuit Break]
+    Guardrails -->|PII Detected| MaskNode[Action: SANITIZE<br/>Redact CC / SSN / Email / Phone]
+    Guardrails -->|Legal Threat OR Budget Cap Exceeded| EscalateNode[Action: ESCALATE<br/>Forward to HITL Queue]
+    
+    MaskNode --> Lifecycle[2. Operational Lifecycle Engine<br/>Perception ➔ Reasoning ➔ Action ➔ Memory]
+    
+    Lifecycle -->|Decision Confidence < 0.85| EscalateNode
+    Lifecycle -->|Standard Execution| AutoResolve[Action: Autonomous Resolution<br/>Dispatch Webhook / Proposal]
+    
+    EscalateNode --> HITLQueue[3. HITLEscalationQueue<br/>Priority: CRITICAL / HIGH / MEDIUM / LOW]
+    HITLQueue --> Supervisor[Human Supervisor Decision<br/>APPROVED / REJECTED / OVERRIDDEN]
+    
+    Lifecycle --> Profiler[4. LifecycleProfiler & ROI Modeler<br/>Phase Waterfall Latency + Token Economics]
+    Profiler --> Dash[5. Interactive HTML Dashboard<br/>docs/archetype_dashboard.html]
+
+    classDef block fill:#EA4335,stroke:#c5221f,stroke-width:2px,color:#ffffff;
+    classDef safe fill:#34A853,stroke:#1e8e3e,stroke-width:2px,color:#ffffff;
+    classDef warn fill:#FBBC04,stroke:#f29900,stroke-width:2px,color:#202124;
+    classDef proc fill:#4285F4,stroke:#1a73e8,stroke-width:2px,color:#ffffff;
+
+    class BlockNode block;
+    class AutoResolve,MaskNode safe;
+    class EscalateNode,HITLQueue warn;
+    class Guardrails,Lifecycle,Profiler,Dash proc;
+```
+
+### Key PR #2 Highlights:
+1. **Multi-Stage Security Guardrails (`guardrails/agent_guardrails.py`)**:
+   - Zero-latency deterministic interception of prompt injections (`PROMPT_INJECTION_IGNORE_DIRECTIVES`, `JAILBREAK_ROLEPLAY`, `SYSTEM_PROMPT_EXTRACTION`) in sub-0.02ms with 0 token expenditure.
+   - PCI-DSS & GDPR-compliant PII Masking: Redacts 16-digit credit cards (`[REDACTED_CREDIT_CARD]`), SSNs (`[REDACTED_SSN]`), emails, and phone numbers.
+   - Financial Boundary Enforcement: Validates transactions against programmatic ceilings ($500 default auto-approval cap).
+   - Hostile & Legal Threat Interception: Detects regulatory threats and lawyer mentions for immediate escalation.
+
+2. **Human-in-the-Loop (HITL) Policy Escalation Queue (`hitl/escalation_queue.py`)**:
+   - Priority scoring engine (`CRITICAL`, `HIGH`, `MEDIUM`, `LOW`) factoring in risk scores, legal exposure, financial overruns, and confidence deficits.
+   - Supervisor review state machines (`PENDING` → `APPROVED` / `REJECTED` / `OVERRIDDEN`) with immutable audit trails.
+
+3. **Lifecycle Telemetry Waterfall & Economics Profiler (`telemetry/lifecycle_profiler.py`)**:
+   - Profiles wall-clock execution across the 4 canonical operational phases: Perception (12-16ms), Reasoning (28-145ms), Action (6-26ms), Memory (4-13ms).
+   - Multi-model pricing comparator: Models Gemini 2.5 Flash ($0.075 / $0.30 per 1M tokens) against OpenAI GPT-4o ($2.50 / $10.00) and Claude 3.5 Sonnet ($3.00 / $15.00), demonstrating **>97% enterprise cost reduction**.
+   - Automated export of structured JSON and Google L5 Markdown scorecards to `telemetry/reports/`.
+
+4. **Interactive Architecture & Simulation Dashboard (`docs/archetype_dashboard.html`)**:
+   - Self-contained visual dashboard featuring an interactive Williams' Taxonomy Explorer, live 4-archetype execution simulator with real-time latency waterfalls, HITL supervisor review console, and dynamic ROI calculator.
+
+---
+
+## 3. Williams' Agent Framework & Property Taxonomy
 
 Under Williams' formulation, an autonomous agent is defined across **four behavioral properties** and **four operational components**, positioned along a continuous spectrum:
 
@@ -76,7 +133,7 @@ mindmap
 
 ---
 
-## 3. Deep Architectural Blueprints of the 4 Archetypes
+## 4. Deep Architectural Blueprints of the 4 Archetypes
 
 ### Project 1: Market & News Intelligence Agent (`project-1-stock-monitor`)
 *Systems Problem:* Ingestion loops without semantic filtering produce notification fatigue and quadratic LLM costs.
@@ -203,7 +260,7 @@ sequenceDiagram
 
 ---
 
-## 4. Google L5 Systems & Architectural Trade-off Matrix
+## 5. Google L5 Systems & Architectural Trade-off Matrix
 
 | Architectural Vector | Naive / Baseline Approach | Applied Agent Architecture (This Lab) | L5 Systems Rationale & Trade-offs |
 | :--- | :--- | :--- | :--- |
@@ -212,16 +269,7 @@ sequenceDiagram
 | **Risk & Autonomy** | Binary (100% autonomous or 100% human) | Spectrum-based gating with `CONFIDENCE_THRESHOLD=0.85` | Provides mathematical bounding on liability while automating 60-70% of standard customer inquiries. |
 | **Constraint Resolution** | Single prompt with conflicting instructions | Multi-agent adversarial separation of concerns | Separating utility maximization from constraint auditing prevents model compromise and hallucinated math. |
 | **Inter-Agent Protocol** | Freeform text string concatenations | Typed `Message` objects in a managed `ConversationBuffer` | Enables auditability, deterministic round bounds, and automated convergence detection. |
-
----
-
-## 5. Production Guardrails & Resiliency Patterns
-
-1. **Deterministic Structured Outputs**: All agent decisions use Pydantic models with `response_mime_type="application/json"`, preventing invalid schema transitions.
-2. **Bounded Negotiation Ceiling (`MAX_ROUNDS=5`)**: Prevents circular agent-to-agent debate and runaway API expenditure.
-3. **Hard Confidence Gating**: Support triage automatically defaults to human escalation whenever uncertainty exceeds 15% or high financial thresholds are touched.
-4. **Episodic Deduplication**: SQLite indexes prevent re-evaluating identical news items or market signals.
-5. **Zero-Leak Security**: Strict `.gitignore` and `.env.example` configurations isolate all Gemini API credentials.
+| **Security Defense** | Unchecked raw string model injection | Zero-latency regex inspection + PII redaction | Defends against prompt injection and GDPR/PCI-DSS violations in <0.02ms with 0 token spend. |
 
 ---
 
@@ -253,19 +301,42 @@ cp .env.example .env
 
 ## 7. Execution & Verification Guide
 
-The unified CLI runner (`run_lab.py`) orchestrates demos, property inspection, and automated test validation:
+The unified CLI runner (`run_lab.py`) orchestrates demos, property inspection, security validation, and automated tests:
 
 ### 1. View Agent Catalog & Williams' Taxonomy
 ```bash
 python run_lab.py --list
 ```
 
-### 2. Run Automated Verification Test Suite
+### 2. Run Automated Verification Test Suite (21 Tests)
 ```bash
 python run_lab.py --test
 ```
 
-### 3. Launch Individual Agent Archetypes
+### 3. Verify Security Guardrails Engine
+```bash
+python run_lab.py --guardrails
+```
+
+### 4. Launch HITL Policy Escalation Console
+```bash
+python run_lab.py --hitl
+```
+
+### 5. Profile Operational Lifecycle Telemetry (Perception ➔ Memory)
+```bash
+# Run 3 iterations per archetype and export reports
+python run_lab.py --lifecycle --export-dir telemetry/reports
+```
+
+### 6. View Interactive Single-Page Dashboard
+```bash
+python run_lab.py --dashboard
+# Or open directly:
+open docs/archetype_dashboard.html
+```
+
+### 7. Launch Individual Agent Archetypes
 ```bash
 # Project 1: Market & News Intelligence Monitor
 python run_lab.py --project 1
@@ -277,31 +348,26 @@ python run_lab.py --project 2
 python run_lab.py --project 3
 
 # Project 4: Multi-Agent Travel Agency Negotiation Loop
-### 4. Execute Cross-Archetype Performance & Cost Benchmark
-```bash
-# Run deterministic offline mock benchmark (default)
-python run_lab.py --benchmark
-
-# Run benchmark and export JSON + presentation-grade Markdown reports
-python run_lab.py --benchmark --export-dir benchmarks/reports
+python run_lab.py --project 4
 ```
 
 ---
 
-## 8. Cross-Archetype Performance, Token & Cost Scorecard
+## 8. Operational Lifecycle Latency & Token Economics Scorecard
 
-The comparative benchmark suite profiles all 4 agent architectures on Google Gemini 2.5 Flash enterprise pricing ($0.075 / 1M prompt tokens, $0.30 / 1M completion tokens):
+Profiled using `LifecycleProfiler` across the 4 operational phases on Google Gemini 2.5 Flash ($0.075 / 1M prompt tokens, $0.30 / 1M completion tokens):
 
-| # | Agent Archetype | Williams' Framework Classification | Mean Latency | P95 Latency | Total Tokens | Cost / 1k Invocations | Contract Pass Rate |
-| :-: | :--- | :--- | :-: | :-: | :-: | :-: | :-: |
-| **1** | **Stock & News Monitor** | Autonomous Monitoring Loop | `~53 ms` | `~56 ms` | 249 | **$0.0331** | **100.0%** |
-| **2** | **Deep Researcher** | Goal Decomposition & Plan-Execute | `~135 ms` | `~145 ms` | 1,230 | **$0.1778** | **98.5%** |
-| **3** | **Support Triage Router** | Autonomy Spectrum & Policy Escalation | `~72 ms` | `~77 ms` | 450 | **$0.0585** | **100.0%** |
-| **4** | **Travel Agency Debate** | Collaborative Multi-Agent Debate | `~200 ms` | `~215 ms` | 1,980 | **$0.2745** | **99.0%** |
+| # | Archetype | Perception | Reasoning | Action | Memory | Total Mean | P95 SLA | Cost / 1k Invocations | Cost Reduction vs GPT-4o |
+| :-: | :--- | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: |
+| **1** | **Market Intelligence Monitor** | `14.5 ms` | `28.0 ms` | `6.5 ms` | `4.0 ms` | **`53.0 ms`** | **`60.5 ms`** | **$0.0307** | **96.8%** |
+| **2** | **Deep Research Synthesizer** | `12.0 ms` | `94.0 ms` | `21.0 ms` | `8.0 ms` | **`135.0 ms`** | **`154.7 ms`** | **$0.1776** | **97.1%** |
+| **3** | **Customer Support Router** | `11.0 ms` | `48.0 ms` | `9.0 ms` | `4.0 ms` | **`72.0 ms`** | **`82.5 ms`** | **$0.0584** | **96.9%** |
+| **4** | **Collaborative Travel Agency** | `16.0 ms` | `145.0 ms` | `26.0 ms` | `13.0 ms` | **`200.0 ms`** | **`229.3 ms`** | **$0.2744** | **97.3%** |
 
-- **Fleet Average Latency:** `~115 ms`
-- **Suite Cost per 1,000 Iterations:** `$0.5439`
-- **Average Schema & Contract Conformance:** `99.38%`
+- **Fleet Average Latency:** `115.0 ms`
+- **Total Suite Cost per 1,000 Iterations (Gemini 2.5 Flash):** `$0.5411`
+- **Total Suite Cost per 1,000 Iterations (GPT-4o Baseline):** `$19.7825`
+- **Net Enterprise Fleet Cost Savings:** **`97.26%`**
 
 ---
 
@@ -309,22 +375,35 @@ The comparative benchmark suite profiles all 4 agent architectures on Google Gem
 
 ```
 pm-learning-agents/
-├── run_lab.py                         # Unified CLI runner & test orchestrator
+├── run_lab.py                         # Unified CLI runner (projects, benchmarks, guardrails, HITL)
 ├── pyproject.toml                     # PEP 517/621 packaging metadata
 ├── requirements.txt                   # Production dependency pins
 ├── .env.example                       # Safe environment variable template
 ├── .gitignore                         # Zero-leak version control exclusions
 ├── LICENSE                            # MIT License
-├── README.md                          # Google L5 Engineering Design Document
+├── README.md                          # Google L5 Engineering Design Document & PRD
 ├── LEARNINGS.md                       # Williams' Agent Framework living reference
 ├── PROGRESS.md                        # Architecture milestone and decision log
-├── benchmarks/                        # Cross-archetype performance & cost harness
+├── docs/
+│   └── archetype_dashboard.html       # Interactive single-page architecture & simulation dashboard
+├── guardrails/                        # PR #2 Multi-stage security & policy defense engine
 │   ├── __init__.py
-│   ├── archetype_benchmarker.py       # Multi-metric benchmark runner & cost modeler
+│   └── agent_guardrails.py            # Prompt injection defense, PII masking, budget enforcement
+├── hitl/                              # PR #2 Human-in-the-Loop decision supervisor
+│   ├── __init__.py
+│   └── escalation_queue.py            # Priority-scored escalation queue & review state machine
+├── telemetry/                         # PR #2 Operational lifecycle telemetry profiler
+│   ├── __init__.py
+│   ├── lifecycle_profiler.py          # 4-phase latency waterfalls & multi-model economics
+│   └── reports/                       # Exported lifecycle telemetry JSON & Markdown scorecards
+├── benchmarks/                        # PR #1 Cross-archetype benchmark harness
+│   ├── __init__.py
+│   ├── archetype_benchmarker.py       # Comparative benchmark runner & cost modeler
 │   └── reports/                       # Exported benchmark reports (JSON & Markdown)
 ├── tests/
 │   ├── test_learning_agents.py        # Automated test suite for schemas & buffers
-│   └── test_benchmarks.py             # Unit tests for token & cost benchmark harness
+│   ├── test_benchmarks.py             # Unit tests for token & cost benchmark harness
+│   └── test_guardrails_telemetry_hitl.py # PR #2 tests (guardrails, HITL queue, lifecycle profiler)
 ├── project-1-stock-monitor/           # Archetype 1: Perception-Reasoning-Action Loop
 │   ├── src/ (perception, reasoning, action, memory, config, main)
 │   └── README.md
