@@ -1,0 +1,233 @@
+{
+  "timestamp": "2026-11-04T17:07:40Z",
+  "benchmark_suite": "Williams Agent Framework 4-Archetype Token Economics",
+  "fleet_size": 4,
+  "token_footprints": {
+    "total_input": 2490,
+    "total_output": 1050,
+    "total_cacheable": 1250,
+    "total_tokens": 3540
+  },
+  "workloads": [
+    {
+      "id": "1",
+      "name": "Stock & News Monitor",
+      "category": "Autonomous Monitoring Loop",
+      "focus": "Perception \u21c4 Memory",
+      "input_tokens": 240,
+      "output_tokens": 80,
+      "cacheable_input_tokens": 120,
+      "p95_latency_ms": 55.0
+    },
+    {
+      "id": "2",
+      "name": "Deep Research Synthesizer",
+      "category": "Goal Decomposition & Plan-Execute",
+      "focus": "Reasoning \u21c4 Action",
+      "input_tokens": 950,
+      "output_tokens": 420,
+      "cacheable_input_tokens": 480,
+      "p95_latency_ms": 140.0
+    },
+    {
+      "id": "3",
+      "name": "Customer Support Router",
+      "category": "Autonomy Spectrum & Policy Escalation",
+      "focus": "Perception \u21c4 Action",
+      "input_tokens": 480,
+      "output_tokens": 160,
+      "cacheable_input_tokens": 240,
+      "p95_latency_ms": 90.0
+    },
+    {
+      "id": "4",
+      "name": "Travel Agency Negotiation",
+      "category": "Collaborative Multi-Agent Debate",
+      "focus": "Reasoning \u21c4 Social Debate",
+      "input_tokens": 820,
+      "output_tokens": 390,
+      "cacheable_input_tokens": 410,
+      "p95_latency_ms": 165.0
+    }
+  ],
+  "projections": {
+    "pricing_catalog": {
+      "gemini-2.5-flash": {
+        "name": "Gemini 2.5 Flash (Vertex AI)",
+        "provider": "Google Cloud",
+        "input_cost_per_m": 0.075,
+        "output_cost_per_m": 0.3,
+        "cached_input_cost_per_m": 0.0375,
+        "avg_latency_ms": 68.0,
+        "p95_latency_ms": 112.5
+      },
+      "gemini-2.5-flash-lite": {
+        "name": "Gemini 2.5 Flash-Lite (Vertex AI)",
+        "provider": "Google Cloud",
+        "input_cost_per_m": 0.0375,
+        "output_cost_per_m": 0.15,
+        "cached_input_cost_per_m": 0.01875,
+        "avg_latency_ms": 42.0,
+        "p95_latency_ms": 65.0
+      },
+      "claude-3-5-sonnet": {
+        "name": "Claude 3.5 Sonnet",
+        "provider": "Anthropic",
+        "input_cost_per_m": 3.0,
+        "output_cost_per_m": 15.0,
+        "cached_input_cost_per_m": 0.3,
+        "avg_latency_ms": 310.0,
+        "p95_latency_ms": 480.0
+      },
+      "gpt-4o": {
+        "name": "GPT-4o",
+        "provider": "OpenAI",
+        "input_cost_per_m": 2.5,
+        "output_cost_per_m": 10.0,
+        "cached_input_cost_per_m": 1.25,
+        "avg_latency_ms": 280.0,
+        "p95_latency_ms": 440.0
+      }
+    },
+    "models": {
+      "gemini-2.5-flash": {
+        "name": "Gemini 2.5 Flash (Vertex AI)",
+        "provider": "Google Cloud",
+        "single_run_usd": 0.0005017499999999999,
+        "single_run_cached_usd": 0.00045506249999999995,
+        "p95_latency_ms": 112.5,
+        "tiers": {
+          "10000": {
+            "standard_usd": 5.02,
+            "cached_usd": 4.55
+          },
+          "50000": {
+            "standard_usd": 25.09,
+            "cached_usd": 22.75
+          },
+          "100000": {
+            "standard_usd": 50.17,
+            "cached_usd": 45.51
+          },
+          "500000": {
+            "standard_usd": 250.87,
+            "cached_usd": 227.53
+          },
+          "1000000": {
+            "standard_usd": 501.75,
+            "cached_usd": 455.06
+          }
+        }
+      },
+      "gemini-2.5-flash-lite": {
+        "name": "Gemini 2.5 Flash-Lite (Vertex AI)",
+        "provider": "Google Cloud",
+        "single_run_usd": 0.00025087499999999996,
+        "single_run_cached_usd": 0.00022753124999999998,
+        "p95_latency_ms": 65.0,
+        "tiers": {
+          "10000": {
+            "standard_usd": 2.51,
+            "cached_usd": 2.28
+          },
+          "50000": {
+            "standard_usd": 12.54,
+            "cached_usd": 11.38
+          },
+          "100000": {
+            "standard_usd": 25.09,
+            "cached_usd": 22.75
+          },
+          "500000": {
+            "standard_usd": 125.44,
+            "cached_usd": 113.77
+          },
+          "1000000": {
+            "standard_usd": 250.87,
+            "cached_usd": 227.53
+          }
+        }
+      },
+      "claude-3-5-sonnet": {
+        "name": "Claude 3.5 Sonnet",
+        "provider": "Anthropic",
+        "single_run_usd": 0.02322,
+        "single_run_cached_usd": 0.0198585,
+        "p95_latency_ms": 480.0,
+        "tiers": {
+          "10000": {
+            "standard_usd": 232.2,
+            "cached_usd": 198.59
+          },
+          "50000": {
+            "standard_usd": 1161.0,
+            "cached_usd": 992.93
+          },
+          "100000": {
+            "standard_usd": 2322.0,
+            "cached_usd": 1985.85
+          },
+          "500000": {
+            "standard_usd": 11610.0,
+            "cached_usd": 9929.25
+          },
+          "1000000": {
+            "standard_usd": 23220.0,
+            "cached_usd": 19858.5
+          }
+        }
+      },
+      "gpt-4o": {
+        "name": "GPT-4o",
+        "provider": "OpenAI",
+        "single_run_usd": 0.016724999999999997,
+        "single_run_cached_usd": 0.015168749999999998,
+        "p95_latency_ms": 440.0,
+        "tiers": {
+          "10000": {
+            "standard_usd": 167.25,
+            "cached_usd": 151.69
+          },
+          "50000": {
+            "standard_usd": 836.25,
+            "cached_usd": 758.44
+          },
+          "100000": {
+            "standard_usd": 1672.5,
+            "cached_usd": 1516.87
+          },
+          "500000": {
+            "standard_usd": 8362.5,
+            "cached_usd": 7584.37
+          },
+          "1000000": {
+            "standard_usd": 16725.0,
+            "cached_usd": 15168.75
+          }
+        }
+      }
+    }
+  },
+  "roi_analysis_500k_runs": {
+    "vs_gpt4o": {
+      "runs": 500000,
+      "baseline_model": "GPT-4o",
+      "baseline_cost_usd": 8362.5,
+      "target_model": "Gemini 2.5 Flash (Vertex AI)",
+      "target_cost_usd": 227.53,
+      "net_savings_usd": 8134.97,
+      "percent_savings": 97.28,
+      "with_prompt_caching": true
+    },
+    "vs_claude_3_5_sonnet": {
+      "runs": 500000,
+      "baseline_model": "Claude 3.5 Sonnet",
+      "baseline_cost_usd": 11610.0,
+      "target_model": "Gemini 2.5 Flash (Vertex AI)",
+      "target_cost_usd": 227.53,
+      "net_savings_usd": 11382.47,
+      "percent_savings": 98.04,
+      "with_prompt_caching": true
+    }
+  }
+}
