@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pm-learning-agents"
-version = "0.1.0"
+version = "0.3.0"
 description = "Applied AI Agent Architecture Lab: 4 production agent archetypes built on Google Gemini and Williams' Agent Framework"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -22,16 +22,6 @@ keywords = [
     "rag",
     "genai"
 ]
-classifiers = [
-    "Development Status :: 4 - Beta",
-    "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Topic :: Scientific/Engineering :: Artificial Intelligence"
-]
 dependencies = [
     "google-genai>=0.2.0",
     "pydantic>=2.5.0",
@@ -47,3 +37,14 @@ Repository = "https://github.com/BigBro2454/pm-learning-agents"
 
 [project.scripts]
 pm-agents = "run_lab:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["guardrails*", "hitl*", "telemetry*", "benchmarks*"]
+
+[tool.setuptools]
+py-modules = ["run_lab"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

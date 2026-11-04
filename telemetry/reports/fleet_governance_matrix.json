@@ -1,0 +1,62 @@
+{
+  "timestamp": "2026-11-04T17:07:40Z",
+  "governance_suite": "Williams Agent Framework 4-Archetype Enterprise Compliance",
+  "audit_summary": {
+    "total_archetypes": 4,
+    "fleet_grade": "A+",
+    "fleet_readiness_pct": 100.0,
+    "zero_leak_security_compliance": "100.0%",
+    "offline_determinism": "100.0%",
+    "average_p95_sla_ms": 112.5,
+    "archetypes_audited": [
+      {
+        "id": "1",
+        "name": "Stock & News Monitor",
+        "category": "Autonomous Monitoring Loop",
+        "topology": "Perception-Reasoning-Action-Memory Loop",
+        "model_runtime": "Gemini 2.5 Flash",
+        "mock_support": true,
+        "security_guardrails": "Regex Input Validation + PII Masking + Credential Redaction",
+        "p95_sla_ms": 55,
+        "readiness_grade": "A+",
+        "tradeoff_summary": "High episodic reactivity vs polling rate limits; mitigated by SQLite hash dedup."
+      },
+      {
+        "id": "2",
+        "name": "Deep Research Synthesizer",
+        "category": "Goal Decomposition & Plan-Execute",
+        "topology": "Iterative Plan-Execute-Verify Loop",
+        "model_runtime": "Gemini 2.5 Flash",
+        "mock_support": true,
+        "security_guardrails": "Plan Verification + Prompt Injection Defense + PII Redaction",
+        "p95_sla_ms": 140,
+        "readiness_grade": "A+",
+        "tradeoff_summary": "Deep factual synthesis & citation rigor vs sequential planning latency."
+      },
+      {
+        "id": "3",
+        "name": "Customer Support Router",
+        "category": "Autonomy Spectrum & Policy Escalation",
+        "topology": "Triaged Gated Vector Retrieval",
+        "model_runtime": "Gemini 2.5 Flash",
+        "mock_support": true,
+        "security_guardrails": "Confidence Gating + HITL Escalation Queue + $500 Financial Ceiling",
+        "p95_sla_ms": 90,
+        "readiness_grade": "A+",
+        "tradeoff_summary": "Automated deflection velocity vs escalation threshold tuning."
+      },
+      {
+        "id": "4",
+        "name": "Travel Agency Negotiation",
+        "category": "Collaborative Multi-Agent Debate",
+        "topology": "Adversarial Multi-Agent Debate",
+        "model_runtime": "Gemini 2.5 Flash",
+        "mock_support": true,
+        "security_guardrails": "Token Bucket Rate Limiter + Financial Budget Constraint Gating",
+        "p95_sla_ms": 165,
+        "readiness_grade": "A+",
+        "tradeoff_summary": "Utility maximization vs adversarial convergence rounds; bounded by round limits."
+      }
+    ]
+  }
+}
